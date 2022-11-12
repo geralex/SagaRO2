@@ -52,7 +52,11 @@ namespace SagaGateway
        {
            this.SessionID = SessionID;
            GatewayClientManager.Instance.clients.Add(SessionID, this);
-           byte[] tempServerKey = Encryption.GenerateKey();
+
+           Packets.Server.SendIdentify p1 = new SagaGateway.Packets.Server.SendIdentify();
+           this.netIO.SendPacket(p1, this.SessionID);
+
+           /*byte[] tempServerKey = Encryption.GenerateKey();
            byte[] expandedServerKey = Encryption.GenerateDecExpKey(tempServerKey);
            Packets.Server.SendKey sendPacket = new SagaGateway.Packets.Server.SendKey();
            sendPacket.SetKey(expandedServerKey);
@@ -60,7 +64,7 @@ namespace SagaGateway
            sendPacket.SetRounds(10);
            sendPacket.SetDirection(2);
            this.netIO.SendPacket(sendPacket, this.SessionID);
-           this.netIO.ServerKey = tempServerKey;
+           this.netIO.ServerKey = tempServerKey;*/
        }      
 
 
@@ -101,7 +105,9 @@ namespace SagaGateway
            send.isGateway = true;
            send.ID = 0x0205;
            this.netIO.SendPacket(send, SessionID);
+           
            //this.SessionID = GatewayClientManager.Instance.GetNextSessionID();
+           
            send = new Packet(11);
            send.isGateway = true;
            send.ID = 0x0206;
@@ -114,7 +120,8 @@ namespace SagaGateway
 
        public void OnSendUniversal(SagaGateway.Packets.Client.SendUniversal p)
        {
-           //Logger.ShowInfo(string.Format("Redirecting Packet:{0:X4} of Session:{1} to ServerID:{2:X4}", p.ID, p.SessionID, p.ServerID),null);
+           Logger.ShowInfo(string.Format("!Redirecting Packet:{0:X4} of Session:{1} to ServerID:{2:X4}", p.ID, p.SessionID, p.ServerID),null);
+
            if (p.ServerID == 0x0301)
                Gateway.Login.SendToLogin(p.GetData(), this.SessionID);
            if (p.ServerID == 0x0501)

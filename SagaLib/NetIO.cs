@@ -66,9 +66,9 @@ namespace SagaLib
             this.nlock = new ReaderWriterLock();
             // Use the static key untill the keys have been exchanged
             this.clientKey = new byte[16];
-            Encryption.StaticKey.CopyTo(this.clientKey, 0);
+            //Encryption.StaticKey.CopyTo(this.clientKey, 0);
             this.serverKey = new byte[16];
-            Encryption.StaticKey.CopyTo(this.serverKey, 0);
+            //Encryption.StaticKey.CopyTo(this.serverKey, 0);
 
             this.isDisconnected = false;
 
@@ -106,9 +106,9 @@ namespace SagaLib
             this.nlock = new ReaderWriterLock();
             // Use the static key untill the keys have been exchanged
             this.clientKey = new byte[16];
-            Encryption.StaticKey.CopyTo(this.clientKey, 0);
+            //Encryption.StaticKey.CopyTo(this.clientKey, 0);
             this.serverKey = new byte[16];
-            Encryption.StaticKey.CopyTo(this.serverKey, 0);
+            //Encryption.StaticKey.CopyTo(this.serverKey, 0);
 
             this.isDisconnected = false;
 
@@ -234,6 +234,9 @@ namespace SagaLib
 
                 ushort size = BitConverter.ToUInt16(buffer, 0);
 
+                //Logger.ShowWarning(sock.RemoteEndPoint.ToString() + " error: packet size is < 10", null);
+
+
                 if (size < 4)
                 {
                    Logger.ShowWarning(sock.RemoteEndPoint.ToString() + " error: packet size is < 4",null);
@@ -285,7 +288,7 @@ namespace SagaLib
 
                 // Receive the data from the packet and call the receivedata function
                 // The packet is stored in AsyncState
-                //Console.WriteLine("New packet with size " + p.size);
+                Console.WriteLine("New packet with size " + size);
                 try { this.nlock.ReleaseWriterLock(); stream.BeginRead(data, 2, size - 2, this.callbackData, data); }
                 catch (Exception)
                 {
@@ -329,20 +332,20 @@ namespace SagaLib
                     return;
                 }
                 byte[] raw = (byte[])ar.AsyncState;
-                if (this.isGateway) raw = Encryption.Decrypt(raw, 2, this.ClientKey);
+                if (this.isGateway) raw = raw;// Encryption.Decrypt(raw, 2, this.ClientKey);
                 if (!isGateway)
                 {
                     ushort messageID = (ushort)(raw[7] + (raw[6] << 8));
 
                     if (!this.commandTable.ContainsKey((messageID)))
                     {
-                        if (!this.fullHeader)
+                        /*if (!this.fullHeader)
                         {
-                            Logger.ShowWarning(string.Format("Got unknown packet {0:X} {1:X} from " + sock.RemoteEndPoint.ToString(), raw[6], raw[7]), null);
+                            Logger.ShowWarning(string.Format("!Got unknown packet {0:X} {1:X} from " + sock.RemoteEndPoint.ToString(), raw[6], raw[7]), null);
                             
                         }
                         else
-                        {
+                        {*/
                             if (commandTable.ContainsKey((ushort)0xFFFF))
                             {
                                 if (this.commandTable[(ushort)0xFFFF].SizeIsOk((ushort)raw.Length))
@@ -377,7 +380,7 @@ namespace SagaLib
                             {
                                 Logger.ShowWarning("Universal Packet 0xFFFF not defined!", null);
                             }
-                        }
+                        //}
                     }
                     else
                     {
@@ -539,8 +542,8 @@ namespace SagaLib
                     if (this.isGateway)
                     {
                         byte[] data;
-                        if (p.doNotEncryptBuffer) data = Encryption.Encrypt((byte[])p.data.Clone(), 2, this.serverKey);
-                        else data = Encryption.Encrypt(p.data, 2, this.serverKey);
+                        if (p.doNotEncryptBuffer) data = (byte[])p.data.Clone();//Encryption.Encrypt((byte[])p.data.Clone(), 2, this.serverKey);
+                        else data = p.data;// Encryption.Encrypt(p.data, 2, this.serverKey);
                         sock.BeginSend(data, 0, data.Length, SocketFlags.None, null, null);
                     }
                     else
