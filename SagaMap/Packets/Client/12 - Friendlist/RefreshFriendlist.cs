@@ -14,5 +14,21 @@ namespace SagaMap.Packets.Client
             this.size = 4;
             this.offset = 4;
         }
+
+        public uint GetQuestID()
+        {
+            return this.GetUInt(4);
+        }
+
+        public override SagaLib.Packet New()
+        {
+            return (SagaLib.Packet)new SagaMap.Packets.Client.RefreshFriendlist();
+        }
+
+        public override void Parse(SagaLib.Client client)
+        {
+            ((MapClient)(client)).OnRefreshFriendlist(this);
+        }
+
     }
 }

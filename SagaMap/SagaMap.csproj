@@ -58,6 +58,8 @@
     <Compile Include="Manager\ExperienceManager.cs" />
     <Compile Include="Manager\MapClientManager.cs" />
     <Compile Include="Manager\MobFactory.cs" />
+    <Compile Include="Network\Client\MapClient.BlackList.cs" />
+    <Compile Include="Network\Client\MapClient.Friends.cs" />
     <Compile Include="Network\Client\MapClient.Market.cs" />
     <Compile Include="Network\Client\MapClient.Party.cs" />
     <Compile Include="Network\Client\MapClient.Mail.cs" />

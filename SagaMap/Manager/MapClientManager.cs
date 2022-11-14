@@ -120,7 +120,17 @@ namespace SagaMap.Manager
             commandTable.Add(0x090D, new Packets.Client.SetSpecialSkill());
             commandTable.Add(0x090E, new Packets.Client.RemoveSpecialSkill());
             commandTable.Add(0x0911, new Packets.Client.WantSetSpeciality());
-            
+
+            //Add friend system
+            commandTable.Add(0x1201, new Packets.Client.RegisterFriendlistChar());
+            commandTable.Add(0x1202, new Packets.Client.UnregisterFriendlistChar());
+            commandTable.Add(0x1203, new Packets.Client.RefreshFriendlist());
+
+
+            //Add blacklist system
+            commandTable.Add(0x1204, new Packets.Client.RegisterBlacklistChar());
+            commandTable.Add(0x1205, new Packets.Client.UnregisterBlacklistChar());
+            commandTable.Add(0x1206, new Packets.Client.RefreshBlacklist());
 
             commandTable.Add(0x0A01, new Packets.Client.AddShortcut());
             commandTable.Add(0x0A02, new Packets.Client.DelShortcut());
@@ -155,7 +165,9 @@ namespace SagaMap.Manager
             commandTable.Add(0xFE00, new Packets.Client.Heartbeat());
             commandTable.Add(0xFE01, new Packets.Login.Get.MapPing());
 
+            commandTable.Add(0x0502, new Packets.Client.GwLogout());
 
+            
             this.waitressQueue = new AutoResetEvent(false);
             this.waitressHasFinished = new ManualResetEvent(false);
             this.waitingWaitressesCount = 0;
