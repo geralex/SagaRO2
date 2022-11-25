@@ -15,10 +15,11 @@ namespace SagaMap.Packets.Client
             this.offset = 4;
         }
 
-        public uint GetQuestID()
+        public uint GetFriendID()
         {
             return this.GetUInt(4);
         }
+
 
         public override SagaLib.Packet New()
         {
