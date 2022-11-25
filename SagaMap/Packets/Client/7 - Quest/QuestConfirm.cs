@@ -10,7 +10,7 @@ namespace SagaMap.Packets.Client
     {
         public QuestConfirm()
         {
-            this.size = 9;
+            this.size = 8; //change 9 to 8
             this.offset = 4;
         }
 
