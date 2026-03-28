@@ -16,7 +16,8 @@ namespace SagaGateway.Packets.Client
         /// </summary>
         public SendUniversal()
         {
-            this.size = 14;
+            //this.size = 14;
+            this.size = 10;
             this.isGateway = true;
             this.isFullheader = true;
             this.offset = 10;

@@ -37,11 +37,11 @@ namespace SagaLogin
         private byte activeWorldID;
 
 
-        public LoginClient( Socket mSock, Dictionary<ushort, Packet> mCommandTable , uint session)
+        public LoginClient(Socket mSock, Dictionary<ushort, Packet> mCommandTable, uint session)
         {
             this.SessionID = session;
-            this.netIO = new NetIO( mSock, mCommandTable, this ,LoginClientManager.Instance);
-            if( this.netIO.sock.Connected ) this.OnConnect();            
+            this.netIO = new NetIO(mSock, mCommandTable, this, LoginClientManager.Instance);
+            if (this.netIO.sock.Connected) this.OnConnect();
         }
 
         public LoginClient(uint session)
@@ -68,7 +68,7 @@ namespace SagaLogin
             //TODO:
             //Dispose all clients that connected through this gateway session!
             if (this.User != null) Logger.ShowInfo(this.User.Name + ": [LOGGED_OUT]");
-            LoginClientManager.Instance.OnClientDisconnect( this );
+            LoginClientManager.Instance.OnClientDisconnect(this);
         }
 
         public void RequestMapHeartbeat()
@@ -77,7 +77,7 @@ namespace SagaLogin
             this.netIO.SendPacket(p, this.SessionID);
         }
 
-        public void OnSendKey( SagaLogin.Packets.Client.SendKey p )
+        public void OnSendKey(SagaLogin.Packets.Client.SendKey p)
         {
             this.netIO.ClientKey = p.GetKey();
 
@@ -86,11 +86,11 @@ namespace SagaLogin
         }
 
 
-        public void OnSendGUID( SagaLogin.Packets.Client.SendGUID p )
+        public void OnSendGUID(SagaLogin.Packets.Client.SendGUID p)
         {
 
             Packets.Server.Identify sendPacket = new Packets.Server.Identify();
-            sendPacket.SetSessionID( LoginClientManager.Instance.GetNextSessionID() );
+            sendPacket.SetSessionID(LoginClientManager.Instance.GetNextSessionID());
             this.netIO.SendPacket(sendPacket, this.SessionID);
 
             /* Does not work with latest client, so let's skip it
@@ -131,28 +131,28 @@ namespace SagaLogin
             this.OnDisconnect();
         }
 
-        public void OnSendCRC( SagaLogin.Packets.Client.SendCRC p )
+        public void OnSendCRC(SagaLogin.Packets.Client.SendCRC p)
         {
-            Logger.ShowInfo( "got guid", null );
+            Logger.ShowInfo("got guid", null);
             Packets.Server.Identify sendPacket = new Packets.Server.Identify();
             this.netIO.SendPacket(sendPacket, this.SessionID);
         }
 
-        public void OnSendVersion( SagaLogin.Packets.Client.SendVersion p )
+        public void OnSendVersion(SagaLogin.Packets.Client.SendVersion p)
         {
-            Logger.ShowInfo( this.netIO.sock.RemoteEndPoint.ToString() + " has version " + p.GetIntVersion() + " - " + p.GetUShortVersion() + " ( " + p.GetVersionString() + " ) ", null );
+            Logger.ShowInfo(this.netIO.sock.RemoteEndPoint.ToString() + " has version " + p.GetIntVersion() + " - " + p.GetUShortVersion() + " ( " + p.GetVersionString() + " ) ", null);
 
             Packets.Server.SendAck sendPacket = new Packets.Server.SendAck();
-            sendPacket.SetAck( true );
+            sendPacket.SetAck(true);
 
             this.netIO.SendPacket(sendPacket, this.SessionID);
         }
 
-        public void OnSendLogin( SagaLogin.Packets.Client.SendLogin p )
+        public void OnSendLogin(SagaLogin.Packets.Client.SendLogin p)
         {
             Packets.Server.LoginAnswer sendPacket = new Packets.Server.LoginAnswer();
 
-            string name = p.GetName().ToUpper(); 
+            string name = p.GetName().ToUpper();
             string pass = p.GetMD5Pass();
             name = name.Replace("'", "\\'");
             Packets.Server.LoginError error;
@@ -161,7 +161,7 @@ namespace SagaLogin
             {
                 if (LoginServer.userDB.CheckPassword(name, pass))
                 {
-                    this.User = LoginServer.userDB.GetUser( name );
+                    this.User = LoginServer.userDB.GetUser(name);
                     if (!User.Banned)
                     {
                         // Login OK
@@ -199,7 +199,7 @@ namespace SagaLogin
                         }
                         this.User = LoginServer.userDB.GetUser(realName);
                         if (this.User == null)
-                        {     
+                        {
                             if (name.EndsWith("_M")) this.User = new User(realName, pass, GenderType.MALE);
                             else this.User = new User(realName, pass, GenderType.FEMALE);
                             this.User.lastLogin = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString();
@@ -235,32 +235,32 @@ namespace SagaLogin
 
                 switch (error)
                 {
-                    case SagaLogin.Packets.Server.LoginError.NO_ERROR :
-                        
+                    case SagaLogin.Packets.Server.LoginError.NO_ERROR:
+
                         this.state = SESSION_STATE.LOGGED_IN;
                         this.User.lastLogin = DateTime.Now.ToShortDateString() + " " + DateTime.Now.ToLongTimeString();
                         LoginServer.userDB.WriteUser(this.User);
                         break;
-                    case SagaLogin.Packets.Server.LoginError.WRONG_PASS :
-                    case SagaLogin.Packets.Server.LoginError.WRONG_USER :
-                    case SagaLogin.Packets.Server.LoginError.ALREADY_CONNECTED :
+                    case SagaLogin.Packets.Server.LoginError.WRONG_PASS:
+                    case SagaLogin.Packets.Server.LoginError.WRONG_USER:
+                    case SagaLogin.Packets.Server.LoginError.ALREADY_CONNECTED:
                         Logger.ShowWarning(name + ": [LOGIN_FAILED]", null);
                         break;
                 }
                 sendPacket.SetLoginError(error);
                 this.netIO.SendPacket(sendPacket, this.SessionID);
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
-                Logger.ShowError( ex, null );
+                Logger.ShowError(ex, null);
                 this.Disconnect();
                 return;
             }
         }
 
-        public void OnWantServerList( Packets.Client.WantServerList p )
+        public void OnWantServerList(Packets.Client.WantServerList p)
         {
-            if( this.state == SESSION_STATE.NOT_LOGGED_IN ) return;
+            if (this.state == SESSION_STATE.NOT_LOGGED_IN) return;
 
             Packets.Server.SendServerList sendPacket = new Packets.Server.SendServerList();
 
@@ -296,7 +296,7 @@ namespace SagaLogin
                             cInfo.ping = CharServer.Status.OVERLOADED;
 #endif
                     }
-                    
+
                 }
                 sendPacket.AddServer(cInfo.worldID, cInfo.worldname, charCount, cInfo.ping);
             }
@@ -304,56 +304,56 @@ namespace SagaLogin
             this.netIO.SendPacket(sendPacket, this.SessionID);
         }
 
-        public void OnSelectServer( SagaLogin.Packets.Client.SelectServer p )
+        public void OnSelectServer(SagaLogin.Packets.Client.SelectServer p)
         {
-            if( this.state == SESSION_STATE.NOT_LOGGED_IN ) return;
+            if (this.state == SESSION_STATE.NOT_LOGGED_IN) return;
 
             byte selServer = p.GetSelServer();
 
-            if( !LoginServer.charServerList.ContainsKey( (int)selServer ) )
+            if (!LoginServer.charServerList.ContainsKey((int)selServer))
             {
-                Logger.ShowWarning( this.User.Name + " sent invalid charserver index " + selServer, null );
+                Logger.ShowWarning(this.User.Name + " sent invalid charserver index " + selServer, null);
                 this.Disconnect();
                 return;
             }
             CharServer cInfo = (CharServer)LoginServer.charServerList[(int)selServer];
-            Logger.ShowInfo( this.User.Name + " selected Server: " + cInfo.worldname, null );
+            Logger.ShowInfo(this.User.Name + " selected Server: " + cInfo.worldname, null);
             this.activeWorldID = cInfo.worldID;
             uint[] charlist;
             uint tempChar;
-            charlist = LoginServer.charServerList[this.activeWorldID].charDB.GetCharIDs( this.User.AccountID );            
-            if( charlist != null )
+            charlist = LoginServer.charServerList[this.activeWorldID].charDB.GetCharIDs(this.User.AccountID);
+            if (charlist != null)
             {
                 this.User.chars = new Dictionary<byte, List<uint>>();
-                for( int i = 0; i < charlist.Length; i++ )
+                for (int i = 0; i < charlist.Length; i++)
                 {
                     tempChar = charlist[i];
 
-                    if( !this.User.chars.ContainsKey( this.activeWorldID ) )
+                    if (!this.User.chars.ContainsKey(this.activeWorldID))
                     {
                         this.User.chars[this.activeWorldID] = new List<uint>();
                     }
 
-                    this.User.chars[this.activeWorldID].Add( tempChar );
+                    this.User.chars[this.activeWorldID].Add(tempChar);
                 }
             }
-            if( this.Chars == null ) this.Chars = new List<ActorPC>( 1 );
+            if (this.Chars == null) this.Chars = new List<ActorPC>(1);
             this.Chars.Clear();
 
-            if( this.User.chars.ContainsKey( selServer ) )
+            if (this.User.chars.ContainsKey(selServer))
             {
-                for( int i = 0; i < this.User.chars[selServer].Count; i++ )
+                for (int i = 0; i < this.User.chars[selServer].Count; i++)
                 {
                     try
                     {
-                        ActorPC loadChar = cInfo.charDB.GetChar( this.User.chars[selServer][i] );
-                        if( loadChar == null ) throw new Exception( "cannot load char" );
-                        this.Chars.Add( loadChar );
+                        ActorPC loadChar = cInfo.charDB.GetChar(this.User.chars[selServer][i]);
+                        if (loadChar == null) throw new Exception("cannot load char");
+                        this.Chars.Add(loadChar);
 
                     }
-                    catch( Exception e )
+                    catch (Exception e)
                     {
-                        Console.WriteLine( e.ToString() );
+                        Console.WriteLine(e.ToString());
                         this.Disconnect();
                         return;
                     }
@@ -365,73 +365,112 @@ namespace SagaLogin
             this.SendCharList();
         }
 
-        public void OnWantCharList( Packets.Client.WantCharList p )
+        public void OnWantCharList(Packets.Client.WantCharList p)
         {
-            if( this.state != SESSION_STATE.CSERVER_SELECTED ) return;
+            if (this.state == SESSION_STATE.SENT_TO_MAP)
+            {
+                ReloadCharacters();
+                this.state = SESSION_STATE.CSERVER_SELECTED;
+            }
+
+            if (this.state != SESSION_STATE.CSERVER_SELECTED) return;
 
             this.SendCharList();
         }
 
-        public void OnSelectChar( SagaLogin.Packets.Client.SelectChar p )
+        private void ReloadCharacters()
         {
-            if( this.state != SESSION_STATE.CSERVER_SELECTED ) return;
+            if (!LoginServer.charServerList.ContainsKey((int)this.activeWorldID)) return;
+
+            CharServer cInfo = (CharServer)LoginServer.charServerList[(int)this.activeWorldID];
+            uint[] charlist = cInfo.charDB.GetCharIDs(this.User.AccountID);
+
+            if (this.Chars == null) this.Chars = new List<ActorPC>();
+            this.Chars.Clear();
+
+            if (charlist != null)
+            {
+                if (!this.User.chars.ContainsKey(this.activeWorldID))
+                    this.User.chars[this.activeWorldID] = new List<uint>();
+                else
+                    this.User.chars[this.activeWorldID].Clear();
+
+                for (int i = 0; i < charlist.Length; i++)
+                {
+                    this.User.chars[this.activeWorldID].Add(charlist[i]);
+                    try
+                    {
+                        ActorPC loadChar = cInfo.charDB.GetChar(charlist[i]);
+                        if (loadChar != null) this.Chars.Add(loadChar);
+                    }
+                    catch (Exception e)
+                    {
+                        Logger.ShowError(e, null);
+                    }
+                }
+            }
+        }
+
+        public void OnSelectChar(SagaLogin.Packets.Client.SelectChar p)
+        {
+            if (this.state != SESSION_STATE.CSERVER_SELECTED) return;
 
             int selChar = p.GetSelChar();
 
             bool error = true;
 
-            if( this.Chars[selChar] != null )
+            if (this.Chars[selChar] != null)
             {
-                Logger.ShowInfo( "Getting select char: " + p.GetSelChar() + " char id: " + this.Chars[selChar].charID, null );
+                Logger.ShowInfo("Getting select char: " + p.GetSelChar() + " char id: " + this.Chars[selChar].charID, null);
 
                 Packets.Server.SendToMapServer sendPacket = new Packets.Server.SendToMapServer();
 
 
-                if( LoginServer.charServerList.ContainsKey( (int)this.Chars[selChar].worldID ) )
+                if (LoginServer.charServerList.ContainsKey((int)this.Chars[selChar].worldID))
                 {
 
-                    MapServer mServer = ( (CharServer)( LoginServer.charServerList[(int)this.Chars[selChar].worldID] ) ).GetMapServer( this.Chars[selChar].mapID );
-                    if( mServer != null )
+                    MapServer mServer = ((CharServer)(LoginServer.charServerList[(int)this.Chars[selChar].worldID])).GetMapServer(this.Chars[selChar].mapID);
+                    if (mServer != null)
                     {
-                        sendPacket.SetServer( mServer.IP, (ushort)mServer.port );
+                        sendPacket.SetServer(mServer.IP, (ushort)mServer.port);
 
                         uint val1 = this.Chars[selChar].charID;
                         uint val2 = (uint)Global.Random.Next();
 
                         this.Chars[selChar].validationKey = val2;
 
-                        try { LoginServer.charServerList[this.activeWorldID].charDB.SaveChar( this.Chars[selChar] ); }
-                        catch( Exception ) { this.Disconnect(); return; }
+                        try { LoginServer.charServerList[this.activeWorldID].charDB.SaveChar(this.Chars[selChar]); }
+                        catch (Exception) { this.Disconnect(); return; }
 
-                        sendPacket.SetValidation( val1, val2 );
+                        sendPacket.SetValidation(val1, val2);
 
                         this.netIO.SendPacket(sendPacket, this.SessionID);
 
-                        Logger.ShowInfo( "Sending client " + this.User.Name + " to map server " + mServer.IP + " , port " + mServer.port, null );
+                        Logger.ShowInfo("Sending client " + this.User.Name + " to map server " + mServer.IP + " , port " + mServer.port, null);
 
                         this.state = SESSION_STATE.SENT_TO_MAP;
                         error = false;
 
                     }
                 }
-                if( error )
+                if (error)
                 {
-                    Logger.ShowError( "Cannot find map server for selected char: " + p.GetSelChar(), null );
+                    Logger.ShowError("Cannot find map server for selected char: " + p.GetSelChar(), null);
                     this.Disconnect();
                     return;
                 }
             }
             else
             {
-                Console.WriteLine( "Invalid char index: " + p.GetSelChar() );
+                Console.WriteLine("Invalid char index: " + p.GetSelChar());
                 this.Disconnect();
                 return;
             }
         }
 
-        public void OnGetCharData( Packets.Client.GetCharData p )
+        public void OnGetCharData(Packets.Client.GetCharData p)
         {
-            if( this.state != SESSION_STATE.CSERVER_SELECTED ) return;
+            if (this.state != SESSION_STATE.CSERVER_SELECTED) return;
 
             int selChar = (int)p.GetSelChar();
 
@@ -441,37 +480,37 @@ namespace SagaLogin
                 this.Disconnect();
                 return;
             }
-            if( this.Chars[selChar] == null )
+            if (this.Chars[selChar] == null)
             {
-                Console.WriteLine( this.User.Name + " sent invalid char index " + selChar );
+                Console.WriteLine(this.User.Name + " sent invalid char index " + selChar);
                 this.Disconnect();
                 return;
             }
 
             Packets.Server.SendCharData sendPacket = new Packets.Server.SendCharData();
 
-            sendPacket.SetJobExp( this.Chars[selChar].jExp );
-            sendPacket.SetFace( this.Chars[selChar].face[0], this.Chars[selChar].face[1], this.Chars[selChar].face[2], this.Chars[selChar].face[3], this.Chars[selChar].face[4] );
-            sendPacket.SetEquipment( this.Chars[selChar].inv.GetEquipIDs() );
-            sendPacket.SetAugeSkill( this.Chars[selChar].Weapons[0].augeSkillID );
-            sendPacket.SetSaveMap( this.Chars[selChar].mapID );
+            sendPacket.SetJobExp(this.Chars[selChar].jExp);
+            sendPacket.SetFace(this.Chars[selChar].face[0], this.Chars[selChar].face[1], this.Chars[selChar].face[2], this.Chars[selChar].face[3], this.Chars[selChar].face[4]);
+            sendPacket.SetEquipment(this.Chars[selChar].inv.GetEquipIDs());
+            sendPacket.SetAugeSkill(this.Chars[selChar].Weapons[0].augeSkillID);
+            sendPacket.SetSaveMap(this.Chars[selChar].mapID);
 
             this.netIO.SendPacket(sendPacket, this.SessionID);
 
         }
 
-        public void OnCreateChar( Packets.Client.CreateChar p )
+        public void OnCreateChar(Packets.Client.CreateChar p)
         {
-            if( this.state != SESSION_STATE.CSERVER_SELECTED ) return;
+            if (this.state != SESSION_STATE.CSERVER_SELECTED) return;
 
             bool charAlreadyExists = false;
-            try { charAlreadyExists = LoginServer.charServerList[this.activeWorldID].charDB.CharExists( this.activeWorldID, p.GetCharName() ); }
-            catch( Exception ) { this.Disconnect(); return; }
+            try { charAlreadyExists = LoginServer.charServerList[this.activeWorldID].charDB.CharExists(this.activeWorldID, p.GetCharName()); }
+            catch (Exception) { this.Disconnect(); return; }
 
-            if( charAlreadyExists )
+            if (charAlreadyExists)
             {
                 Packets.Server.SendError p1 = new SagaLogin.Packets.Server.SendError();
-                p1.SetError( Packets.Server.ERROR_TYPE.ERROR1 );
+                p1.SetError(Packets.Server.ERROR_TYPE.ERROR1);
                 this.netIO.SendPacket(p1, this.SessionID);
 
                 return;
@@ -480,7 +519,7 @@ namespace SagaLogin
 
             // WARNING: the data from the client needs to be validated!
             // this is INSECURE!
-            ActorPC tempChar = new ActorPC( this.activeWorldID, p.GetCharName() );
+            ActorPC tempChar = new ActorPC(this.activeWorldID, p.GetCharName());
             tempChar.userName = this.User.Name;
             tempChar.face = new byte[5];
             tempChar.slots = new byte[7];
@@ -504,8 +543,8 @@ namespace SagaLogin
             tempChar.maxHP = Config.Instance.HP;
             tempChar.SP = Config.Instance.SP;
             tempChar.maxSP = Config.Instance.SP;
-            tempChar.LC = 45; 
-            tempChar.maxLC = 45; 
+            tempChar.LC = 45;
+            tempChar.maxLC = 45;
             tempChar.LP = 0;
             tempChar.maxLP = 5;
             tempChar.worldID = this.activeWorldID;
@@ -536,12 +575,12 @@ namespace SagaLogin
             tempChar.details[4] = 0x01; // wing type
             tempChar.details[5] = 0x01; // wing color (not used)
             tempChar.sex = this.User.Sex;
-            tempChar.sightRange = Global.MakeSightRange( 6000 );
+            tempChar.sightRange = Global.MakeSightRange(6000);
             tempChar.maxMoveRange = 10000; // just a "guessed" number, we should find a better, smaller value which works
             tempChar.invisble = false; // this actor is visible to other actors
             tempChar.state = 0;
             tempChar.stance = 0;
-            tempChar.inv = new SagaDB.Items.Inventory( 50 ); // 50 item slots in the inventory
+            tempChar.inv = new SagaDB.Items.Inventory(50); // 50 item slots in the inventory
             // add 2 test items
             foreach (uint i in Config.Instance.Items)
             {
@@ -553,98 +592,98 @@ namespace SagaLogin
             {
                 tempChar.BattleSkills.Add(i, new SkillInfo());
             }
-            if( this.User.AccountID == -1 ) this.User.AccountID = LoginServer.userDB.GetAccountID( this.User.Name );
+            if (this.User.AccountID == -1) this.User.AccountID = LoginServer.userDB.GetAccountID(this.User.Name);
 
-            try { LoginServer.charServerList[this.activeWorldID].charDB.CreateChar( ref tempChar, this.User.AccountID ); }
-            catch( Exception ex )
+            try { LoginServer.charServerList[this.activeWorldID].charDB.CreateChar(ref tempChar, this.User.AccountID); }
+            catch (Exception ex)
             {
-                Logger.ShowError( ex, null );
+                Logger.ShowError(ex, null);
                 this.Disconnect();
                 return;
             }
 
-            if( this.Chars == null ) this.Chars = new List<ActorPC>();
-            this.Chars.Add( tempChar );
+            if (this.Chars == null) this.Chars = new List<ActorPC>();
+            this.Chars.Add(tempChar);
 
-            if( !this.User.chars.ContainsKey( this.activeWorldID ) )
+            if (!this.User.chars.ContainsKey(this.activeWorldID))
             {
                 this.User.chars[this.activeWorldID] = new List<uint>();
             }
 
-            this.User.chars[this.activeWorldID].Add( tempChar.charID );
+            this.User.chars[this.activeWorldID].Add(tempChar.charID);
 
-            try { LoginServer.userDB.WriteUser( this.User ); }
-            catch( Exception ) { this.Disconnect(); return; }
+            try { LoginServer.userDB.WriteUser(this.User); }
+            catch (Exception) { this.Disconnect(); return; }
 
             Packets.Server.SendError p2 = new SagaLogin.Packets.Server.SendError();
-            p2.SetError( Packets.Server.ERROR_TYPE.NO_ERROR );
+            p2.SetError(Packets.Server.ERROR_TYPE.NO_ERROR);
             this.netIO.SendPacket(p2, this.SessionID);
         }
 
-        public void OnDeleteChar( Packets.Client.DeleteChar p )
+        public void OnDeleteChar(Packets.Client.DeleteChar p)
         {
-            if( this.state != SESSION_STATE.CSERVER_SELECTED ) return;
+            if (this.state != SESSION_STATE.CSERVER_SELECTED) return;
 
             int delIndex = (int)p.GetCharIndex();
 
-            if( this.Chars[delIndex] == null )
+            if (this.Chars[delIndex] == null)
             {
-                Console.WriteLine( this.User.Name + " sent invalid char index " + delIndex );
+                Console.WriteLine(this.User.Name + " sent invalid char index " + delIndex);
                 Packets.Server.SendError p1 = new SagaLogin.Packets.Server.SendError();
-                p1.SetError( Packets.Server.ERROR_TYPE.ERROR1 );
+                p1.SetError(Packets.Server.ERROR_TYPE.ERROR1);
                 this.netIO.SendPacket(p1, this.SessionID);
 
                 return;
             }
 
 
-            if( !this.User.chars.ContainsKey( this.activeWorldID ) )
+            if (!this.User.chars.ContainsKey(this.activeWorldID))
             {
                 this.Disconnect();
                 return;
             }
 
-            this.User.chars[this.activeWorldID].Remove( this.Chars[delIndex].charID );
+            this.User.chars[this.activeWorldID].Remove(this.Chars[delIndex].charID);
 
-            try { LoginServer.userDB.WriteUser( this.User ); }
-            catch( Exception ) { this.Disconnect(); return; }
+            try { LoginServer.userDB.WriteUser(this.User); }
+            catch (Exception) { this.Disconnect(); return; }
 
-            try { LoginServer.charServerList[this.activeWorldID].charDB.DeleteChar( this.Chars[delIndex] ); }
-            catch( Exception ) { this.Disconnect(); return; }
+            try { LoginServer.charServerList[this.activeWorldID].charDB.DeleteChar(this.Chars[delIndex]); }
+            catch (Exception) { this.Disconnect(); return; }
 
-            this.Chars.RemoveAt( delIndex );
+            this.Chars.RemoveAt(delIndex);
 
             Packets.Server.SendError p2 = new SagaLogin.Packets.Server.SendError();
-            p2.SetError( Packets.Server.ERROR_TYPE.NO_ERROR );
+            p2.SetError(Packets.Server.ERROR_TYPE.NO_ERROR);
             this.netIO.SendPacket(p2, this.SessionID);
         }
 
 
-        public void OnMapIdentify( Packets.Map.Get.Identify p )
+        public void OnMapIdentify(Packets.Map.Get.Identify p)
         {
-            if( this.state != SESSION_STATE.NOT_LOGGED_IN ) return;
+            if (this.state != SESSION_STATE.NOT_LOGGED_IN) return;
 
             string serverPass = p.GetPass();
             string serverName = p.GetWorldName();
 
-            Logger.ShowInfo( "new map server connected, worldname: " + serverName, null );
+            Logger.ShowInfo("new map server connected, worldname: " + serverName, null);
 
             Packets.Map.Send.LoginAnswer sendPacket = new Packets.Map.Send.LoginAnswer();
 
             bool validServer = false;
             bool aMapIsAlreadyHosted = false;
-            if( serverPass == LoginServer.lcfg.MapServerPass )
+            if (serverPass == LoginServer.lcfg.MapServerPass)
             {
 
-                foreach( CharServer cServer in LoginServer.charServerList.Values )
+                foreach (CharServer cServer in LoginServer.charServerList.Values)
                 {
-                    if( cServer.worldname == serverName )
+                    if (cServer.worldname == serverName)
                     {
-                        if( cServer.MapsAreNotHostedYet( p.GetHostedMaps() ) )
+                        if (cServer.MapsAreNotHostedYet(p.GetHostedMaps()))
                         {
                             validServer = true;
-                            MapServer newServer = new MapServer( cServer.worldID, p.GetIP(), p.GetPort(), this, p.GetHostedMaps(), 0, 0 );
-                            cServer.AddMapServer( newServer );
+                            MapServer newServer = new MapServer(cServer.worldID, p.GetIP(), p.GetPort(), this, p.GetHostedMaps(), 0, 0);
+                            cServer.AddMapServer(newServer);
                             this.mapServer = newServer;
                             this.MapWorldIndex = cServer.worldID;
                             this.isMapServer = true;
@@ -656,20 +695,20 @@ namespace SagaLogin
                 }
             }
 
-            if( validServer )
+            if (validServer)
             {
-                sendPacket.SetError( Packets.Map.Send.IdentError.NO_ERROR );
-                Console.WriteLine( "map-server " + serverName + " : [LOGIN_OK]" );
+                sendPacket.SetError(Packets.Map.Send.IdentError.NO_ERROR);
+                Console.WriteLine("map-server " + serverName + " : [LOGIN_OK]");
             }
-            else if( aMapIsAlreadyHosted )
+            else if (aMapIsAlreadyHosted)
             {
-                sendPacket.SetError( Packets.Map.Send.IdentError.MAP_ALREADY_HOSTED );
-                Console.WriteLine( "map-server " + serverName + " : [LOGIN_FAILED] map-server tried to host a map which is already hosted by another map-server" );
+                sendPacket.SetError(Packets.Map.Send.IdentError.MAP_ALREADY_HOSTED);
+                Console.WriteLine("map-server " + serverName + " : [LOGIN_FAILED] map-server tried to host a map which is already hosted by another map-server");
             }
             else
             {
-                sendPacket.SetError( Packets.Map.Send.IdentError.ERROR );
-                Console.WriteLine( "map-server " + serverName + " : [LOGIN_FAILED]" );
+                sendPacket.SetError(Packets.Map.Send.IdentError.ERROR);
+                Console.WriteLine("map-server " + serverName + " : [LOGIN_FAILED]");
             }
             this.netIO.SendPacket(sendPacket, this.SessionID);
 
@@ -682,10 +721,10 @@ namespace SagaLogin
         {
             Packets.Server.SendCharList sendPacket = new Packets.Server.SendCharList();
 
-            sendPacket.SetCharCountAllServer( (byte)this.Chars.Count );
-            sendPacket.SetServerName( LoginServer.charServerList[this.activeWorldID].worldname );
-            for( int i = 0; i < this.Chars.Count; i++ )
-                sendPacket.AddChar( this.Chars[i].charID, this.Chars[i].name, this.Chars[i].race, this.Chars[i].cExp, this.Chars[i].job, this.Chars[i].pendingDeletion );
+            sendPacket.SetCharCountAllServer((byte)this.Chars.Count);
+            sendPacket.SetServerName(LoginServer.charServerList[this.activeWorldID].worldname);
+            for (int i = 0; i < this.Chars.Count; i++)
+                sendPacket.AddChar(this.Chars[i].charID, this.Chars[i].name, this.Chars[i].race, this.Chars[i].cExp, this.Chars[i].job, this.Chars[i].pendingDeletion);
 
             this.netIO.SendPacket(sendPacket, this.SessionID);
         }
