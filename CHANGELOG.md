@@ -35,3 +35,11 @@ Saga Ragnarok Online 2 Emulator
 #### Even if the size check passed, the log line p.ID with isFullheader = true reads data[12]/data[13] — bytes that don't exist in a 10-byte packet. This would throw an IndexOutOfRangeException.
 
 #### Fix: Moved the p.ServerID == 0x0502 check before the log line. p.ServerID reads data[6]/data[7] which are always safe for any packet >= 10 bytes. The method returns early for 0x0502, never touching p.ID.
+
+
+# 29.03.2026
+
+## Исправлена логика работы методов в части управления список друзей (friendlist) и списком исключений (blacklist)
+
+![ScreenShot](https://raw.github.com/geralex/SagaRO2/master/Screenshots/friend_list.bmp)
+![ScreenShot](https://raw.github.com/geralex/SagaRO2/master/Screenshots/black_list.bmp)

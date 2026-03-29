@@ -119,6 +119,7 @@ namespace SagaMap
             client.Pc = new PC(client);
             Logger.ShowInfo("Player:" + client.Char.name + " logged in");
             Logger.ShowInfo("Total Player count:" + MapClientManager.Instance.Players.Count.ToString());
+            MapClient.BroadcastFriendLogin(client);
         }
 
         public void OnLogout(SagaMap.Packets.Client.GwLogout p)

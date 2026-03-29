@@ -9,7 +9,7 @@ using SagaDB.Items;
 namespace SagaDB
 {
     public interface ActorDB
-    {       
+    {
 
         /// <summary>
         /// Write the given character to the database.
@@ -17,7 +17,7 @@ namespace SagaDB
         /// <param name="user">Character that needs to be writen.</param>
         void SaveChar(ActorPC aChar);
 
-        void CreateChar(ref ActorPC aChar,int account_id);
+        void CreateChar(ref ActorPC aChar, int account_id);
 
         void DeleteChar(ActorPC aChar);
 
@@ -44,7 +44,7 @@ namespace SagaDB
         void NewJobLevel(ActorPC pc, JobType type, byte level);
 
         void UpdateJobLevel(ActorPC pc, JobType type, byte level);
-        
+
         void DeleteJobLevel(ActorPC pc, JobType type);
 
         void NewMapInfo(ActorPC pc, byte mapID, byte value);
@@ -57,7 +57,7 @@ namespace SagaDB
 
         void UpdateStorage(ActorPC pc, Item item);
 
-        void DeleteStorage(ActorPC pc, Item item);        
+        void DeleteStorage(ActorPC pc, Item item);
 
         bool CharExists(byte worldID, string name);
 
@@ -82,7 +82,7 @@ namespace SagaDB
         List<MarketplaceItem> SearchMarketItem(MarketSearchOption option, ushort pageindex, object vars);
 
         MarketplaceItem GetMarketItem(uint id);
-        
+
         //void CreateNpc(ActorNPC aNpc);
 
         void DeleteNpc(ActorNPC aNpc);
@@ -92,5 +92,11 @@ namespace SagaDB
         bool Connect();
 
         bool isConnected();
+
+        /// <summary>Social lists: loaded in GetChar for SQL backends; persisted on list change.</summary>
+        bool InsertFriend(ActorPC owner, string friendName);
+        bool DeleteFriend(ActorPC owner, string friendName);
+        bool InsertBlacklist(ActorPC owner, string name, byte reason);
+        bool DeleteBlacklist(ActorPC owner, string name);
     }
 }

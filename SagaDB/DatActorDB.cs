@@ -8,21 +8,21 @@ using SagaDB.Items;
 
 namespace SagaDB
 {
-    public class DatCharacterDB :  ActorDB
+    public class DatCharacterDB : ActorDB
     {
         [Serializable]
         private class XMLCharDB
         {
-           public uint currentCharID = 0;
-           public Dictionary<uint, string> Chars = new Dictionary<uint, string>();
-           public List<string> CharNames = new List<string>();
+            public uint currentCharID = 0;
+            public Dictionary<uint, string> Chars = new Dictionary<uint, string>();
+            public List<string> CharNames = new List<string>();
         }
         private UnicodeEncoding encoder = new UnicodeEncoding();
-        private string worldID,dbpath;
+        private string worldID, dbpath;
         private bool isconnected = true;
         private XMLCharDB myDB = new XMLCharDB();
 
-        public DatCharacterDB(string worldName,string dbpath)
+        public DatCharacterDB(string worldName, string dbpath)
         {
             this.worldID = worldName;
             this.dbpath = dbpath;
@@ -46,7 +46,7 @@ namespace SagaDB
             }
             catch (Exception)
             {
-            //    this.myDB = new XMLCharDB();
+                //    this.myDB = new XMLCharDB();
             }
             fs.Close();
         }
@@ -68,12 +68,12 @@ namespace SagaDB
         }
 
         public bool Connect()
-        {            
+        {
             return true;
         }
 
         public bool isConnected()
-        {            
+        {
             return this.isconnected;
         }
 
@@ -100,17 +100,17 @@ namespace SagaDB
                 newweapon.stones = new uint[6];
                 aChar.Weapons.Add(newweapon);
             }
-            if(aChar.ShorcutIDs == null) aChar.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
-            if(aChar.BattleSkills==null) aChar.BattleSkills = new Dictionary<uint,SkillInfo>();
-            if(aChar.LivingSkills==null)aChar.LivingSkills =new Dictionary<uint,SkillInfo>();
+            if (aChar.ShorcutIDs == null) aChar.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
+            if (aChar.BattleSkills == null) aChar.BattleSkills = new Dictionary<uint, SkillInfo>();
+            if (aChar.LivingSkills == null) aChar.LivingSkills = new Dictionary<uint, SkillInfo>();
             if (aChar.SpecialSkills == null) aChar.SpecialSkills = new Dictionary<uint, SkillInfo>();
-            if (aChar.InactiveSkills == null) aChar.InactiveSkills =new Dictionary<uint,SkillInfo>();
+            if (aChar.InactiveSkills == null) aChar.InactiveSkills = new Dictionary<uint, SkillInfo>();
             if (aChar.Tasks == null) aChar.Tasks = new Dictionary<string, SagaLib.MultiRunTask>();
             if (aChar.JobLevels == null) aChar.JobLevels = new Dictionary<JobType, byte>();
             aChar.QuestTable = new Dictionary<uint, SagaDB.Quest.Quest>();
             aChar.PersonalQuestTable = new Dictionary<uint, SagaDB.Quest.Quest>();
             aChar.MapInfo = new Dictionary<byte, byte>();
-           
+
             System.IO.FileStream fs = null;
             try
             {
@@ -122,7 +122,7 @@ namespace SagaDB
                 System.Runtime.Serialization.Formatters.Binary.BinaryFormatter xs = new System.Runtime.Serialization.Formatters.Binary.BinaryFormatter();
                 xs.Serialize(fs, aChar);
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 Console.WriteLine("Error: can't create new char in database");
                 throw new Exception(ex.Message + "\r\n" + ex.StackTrace);
@@ -189,7 +189,7 @@ namespace SagaDB
             {
                 try
                 {
-                    if (fs != null) fs.Close();                    
+                    if (fs != null) fs.Close();
                 }
 
                 catch (Exception ex)
@@ -246,7 +246,7 @@ namespace SagaDB
             {
                 string username, name;
                 string[] tmp;
-                if(!this.myDB.Chars.ContainsKey(charID))
+                if (!this.myDB.Chars.ContainsKey(charID))
                     return null;
                 tmp = this.myDB.Chars[charID].Split(',');
                 username = tmp[0];
@@ -275,9 +275,11 @@ namespace SagaDB
                 try
                 {
                     if (fs != null) fs.Close();
-                    if (result.JobLevels == null) result.JobLevels = new Dictionary<JobType, byte>();            
+                    if (result.JobLevels == null) result.JobLevels = new Dictionary<JobType, byte>();
                     if (result.MapInfo == null) result.MapInfo = new Dictionary<byte, byte>();
                     if (result.BattleStatus == null) result.BattleStatus = new BattleStatus();
+                    if (result.Friends == null) result.Friends = new List<string>();
+                    if (result.Blacklist == null) result.Blacklist = new List<KeyValuePair<string, byte>>();
                 }
 
                 catch (Exception ex)
@@ -286,8 +288,8 @@ namespace SagaDB
                     throw new Exception(ex.Message + "\r\n" + ex.StackTrace);
                 }
             }
-            if (result.ShorcutIDs == null) result.ShorcutIDs = new Dictionary<byte,ActorPC.Shortcut>(); 
-            
+            if (result.ShorcutIDs == null) result.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
+
             return result;
         }
 
@@ -408,7 +410,7 @@ namespace SagaDB
         {
             return null;
         }
-        
+
         public void SaveNpc(ActorNPC aNpc)
         {
             return;
@@ -423,6 +425,43 @@ namespace SagaDB
         public ActorNPC GetNpc(string scriptName)
         {
             return null;
+        }
+
+        public bool InsertFriend(ActorPC owner, string friendName)
+        {
+            if (owner == null || string.IsNullOrEmpty(friendName)) return false;
+            if (owner.Friends == null) owner.Friends = new List<string>();
+            if (owner.Friends.Contains(friendName)) return false;
+            owner.Friends.Add(friendName);
+            SaveChar(owner);
+            return true;
+        }
+
+        public bool DeleteFriend(ActorPC owner, string friendName)
+        {
+            if (owner == null || owner.Friends == null) return false;
+            if (!owner.Friends.Remove(friendName)) return false;
+            SaveChar(owner);
+            return true;
+        }
+
+        public bool InsertBlacklist(ActorPC owner, string name, byte reason)
+        {
+            if (owner == null || string.IsNullOrEmpty(name)) return false;
+            if (owner.Blacklist == null) owner.Blacklist = new List<KeyValuePair<string, byte>>();
+            owner.Blacklist.RemoveAll(delegate(KeyValuePair<string, byte> p) { return string.Equals(p.Key, name, StringComparison.OrdinalIgnoreCase); });
+            owner.Blacklist.Add(new KeyValuePair<string, byte>(name, reason));
+            SaveChar(owner);
+            return true;
+        }
+
+        public bool DeleteBlacklist(ActorPC owner, string name)
+        {
+            if (owner == null || owner.Blacklist == null) return false;
+            int n = owner.Blacklist.RemoveAll(delegate(KeyValuePair<string, byte> p) { return string.Equals(p.Key, name, StringComparison.OrdinalIgnoreCase); });
+            if (n <= 0) return false;
+            SaveChar(owner);
+            return true;
         }
 
     }

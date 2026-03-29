@@ -72,6 +72,11 @@
     <Compile Include="Network\Client\MapClient.Chat.cs" />
     <Compile Include="Network\Client\MapClient.Map.cs" />
     <Compile Include="Network\Client\MapClient.Login.cs" />
+    <Compile Include="Packets\Server\13 - Friendlist\FriendLoginNotify.cs" />
+    <Compile Include="Packets\Server\13 - Friendlist\RegisterBlacklistChar.cs" />
+    <Compile Include="Packets\Server\13 - Friendlist\RegisterFriendlistChar.cs" />
+    <Compile Include="Packets\Server\13 - Friendlist\UnregisterBlacklistChar.cs" />
+    <Compile Include="Packets\Server\13 - Friendlist\UnregisterFriendlistChar.cs" />
     <Compile Include="Scripting\QuestElement.cs" />
     <Compile Include="Scripting\QuestGroup.cs" />
     <Compile Include="Skills\Additions\Global\DefaultStance.cs" />

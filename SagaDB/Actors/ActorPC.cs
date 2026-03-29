@@ -9,7 +9,7 @@ namespace SagaDB.Actors
 {
     [Serializable]
     public class ActorPC : Actor
-    { 
+    {
         public uint charID;
         public string userName;
         public byte[] face;
@@ -42,8 +42,8 @@ namespace SagaDB.Actors
         public uint PartyTarget;
         public ActorItem LastMissionBoard;
         //public byte NumShortcuts;
-        public Dictionary<byte,Shortcut> ShorcutIDs;
-        public List<SagaDB.Items.Item> CurNPCinv ;
+        public Dictionary<byte, Shortcut> ShorcutIDs;
+        public List<SagaDB.Items.Item> CurNPCinv;
         public Actor CurTarget;
         public List<Weapon> Weapons;
         public Dictionary<JobType, byte> JobLevels;
@@ -57,6 +57,11 @@ namespace SagaDB.Actors
         public uint Scenario;
         public byte online;
         public byte muted;
+
+        /// <summary>Friend display names (same storage as saga-revised list_friends).</summary>
+        public List<string> Friends;
+        /// <summary>Blacklist entries: name + client reason byte.</summary>
+        public List<KeyValuePair<string, byte>> Blacklist;
 
         /// <summary>
         /// Unique ID in Character Database
@@ -78,7 +83,7 @@ namespace SagaDB.Actors
             get
             {
                 List<SkillInfo> tmp = new List<SkillInfo>();
-                foreach(uint i in this.BattleSkills.Keys)
+                foreach (uint i in this.BattleSkills.Keys)
                 {
                     this.BattleSkills[i].ID = i;
                     tmp.Add(this.BattleSkills[i]);
@@ -91,7 +96,7 @@ namespace SagaDB.Actors
                 foreach (SkillInfo i in value)
                 {
                     this.BattleSkills.Add(i.ID, i);
-                }                
+                }
             }
         }
 
@@ -203,7 +208,7 @@ namespace SagaDB.Actors
             get
             {
                 List<Item> items = new List<Item>();
-                foreach(Item i in this.inv.EquipList.Values)
+                foreach (Item i in this.inv.EquipList.Values)
                 {
                     items.Add(i);
                 }
@@ -280,7 +285,7 @@ namespace SagaDB.Actors
             this.worldID = worldID;
         }
 
-        public ActorPC(uint cId,byte worldID)
+        public ActorPC(uint cId, byte worldID)
         {
             this.type = ActorType.PC;
             this.charID = cId;

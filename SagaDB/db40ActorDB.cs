@@ -27,7 +27,7 @@ namespace SagaDB
             this.dbuser = user;
             this.dbpass = pass;
             this.isconnected = false;
-            
+
             Db4oFactory.Configure().GenerateVersionNumbers(System.Int32.MaxValue);
             Db4oFactory.Configure().GenerateUUIDs(System.Int32.MaxValue);
             Db4oFactory.Configure().ObjectClass(typeof(SagaDB.Actors.ActorPC)).CascadeOnActivate(true);
@@ -100,19 +100,20 @@ namespace SagaDB
                 newweapon.stones = new uint[6];
                 aChar.Weapons.Add(newweapon);
             }
-            if(aChar.ShorcutIDs == null) aChar.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
-            if(aChar.BattleSkills==null) aChar.BattleSkills = new Dictionary<uint,SkillInfo>();
-            if(aChar.LivingSkills==null)aChar.LivingSkills =new Dictionary<uint,SkillInfo>();
+            if (aChar.ShorcutIDs == null) aChar.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
+            if (aChar.BattleSkills == null) aChar.BattleSkills = new Dictionary<uint, SkillInfo>();
+            if (aChar.LivingSkills == null) aChar.LivingSkills = new Dictionary<uint, SkillInfo>();
             if (aChar.SpecialSkills == null) aChar.SpecialSkills = new Dictionary<uint, SkillInfo>();
-            if (aChar.InactiveSkills == null) aChar.InactiveSkills =new Dictionary<uint,SkillInfo>();
+            if (aChar.InactiveSkills == null) aChar.InactiveSkills = new Dictionary<uint, SkillInfo>();
             if (aChar.Tasks == null) aChar.Tasks = new Dictionary<string, SagaLib.MultiRunTask>();
-            
+
             try
             {
                 db.Set(aChar);
                 db.Commit();
             }
-            catch(Exception) {
+            catch (Exception)
+            {
                 Console.WriteLine("Error: can't create new char in database");
                 this.isconnected = false;
                 throw new Exception("can't create new char in database");
@@ -185,7 +186,7 @@ namespace SagaDB
             ActorPC result = null;
             try
             {
-                IObjectSet queryResult = db.Get(new ActorPC(charID,worldID));
+                IObjectSet queryResult = db.Get(new ActorPC(charID, worldID));
                 if (queryResult.Count > 0) result = (ActorPC)queryResult[0];
             }
             catch (Exception)
@@ -212,8 +213,10 @@ namespace SagaDB
                 newweapon.active = 1;
                 result.Weapons.Add(newweapon);
             }
-            if (result.ShorcutIDs == null) result.ShorcutIDs = new Dictionary<byte,ActorPC.Shortcut>(); 
-            
+            if (result.ShorcutIDs == null) result.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
+            if (result.Friends == null) result.Friends = new List<string>();
+            if (result.Blacklist == null) result.Blacklist = new List<KeyValuePair<string, byte>>();
+
             return result;
         }
 
@@ -407,6 +410,75 @@ namespace SagaDB
 
             }
             return result;
+        }
+
+        public bool InsertFriend(ActorPC owner, string friendName)
+        {
+            if (owner == null || string.IsNullOrEmpty(friendName)) return false;
+            if (owner.Friends == null) owner.Friends = new List<string>();
+            if (owner.Friends.Contains(friendName)) return false;
+            owner.Friends.Add(friendName);
+            try
+            {
+                db.Set(owner);
+                db.Commit();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool DeleteFriend(ActorPC owner, string friendName)
+        {
+            if (owner == null || owner.Friends == null) return false;
+            if (!owner.Friends.Remove(friendName)) return false;
+            try
+            {
+                db.Set(owner);
+                db.Commit();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool InsertBlacklist(ActorPC owner, string name, byte reason)
+        {
+            if (owner == null || string.IsNullOrEmpty(name)) return false;
+            if (owner.Blacklist == null) owner.Blacklist = new List<KeyValuePair<string, byte>>();
+            owner.Blacklist.RemoveAll(delegate(KeyValuePair<string, byte> p) { return string.Equals(p.Key, name, StringComparison.OrdinalIgnoreCase); });
+            owner.Blacklist.Add(new KeyValuePair<string, byte>(name, reason));
+            try
+            {
+                db.Set(owner);
+                db.Commit();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public bool DeleteBlacklist(ActorPC owner, string name)
+        {
+            if (owner == null || owner.Blacklist == null) return false;
+            if (owner.Blacklist.RemoveAll(delegate(KeyValuePair<string, byte> p) { return string.Equals(p.Key, name, StringComparison.OrdinalIgnoreCase); }) <= 0)
+                return false;
+            try
+            {
+                db.Set(owner);
+                db.Commit();
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            return true;
         }
 
     }

@@ -26,7 +26,7 @@ namespace SagaDB
         private bool isconnected;
 
 
-        public MySQLCharacterDB( string host, int port, string database, string user, string pass )
+        public MySQLCharacterDB(string host, int port, string database, string user, string pass)
         {
             this.host = host;
             this.port = port.ToString();
@@ -48,30 +48,30 @@ namespace SagaDB
             {
                 Logger.ShowError(ex, null);
             }
-            if( db != null ) { if( db.State != ConnectionState.Closed )this.isconnected = true; else { Console.WriteLine( "SQL Connection error" ); } }
+            if (db != null) { if (db.State != ConnectionState.Closed)this.isconnected = true; else { Console.WriteLine("SQL Connection error"); } }
         }
 
         public bool Connect()
         {
-            if( !this.isconnected )
+            if (!this.isconnected)
             {
-                if( db.State == ConnectionState.Open ) { this.isconnected = true; return true; }
+                if (db.State == ConnectionState.Open) { this.isconnected = true; return true; }
                 try
                 {
                     db.Open();
                 }
-                catch( Exception ) { }
-                if( db != null ) { if( db.State != ConnectionState.Closed )return true; else return false; }
+                catch (Exception) { }
+                if (db != null) { if (db.State != ConnectionState.Closed)return true; else return false; }
             }
             return true;
         }
 
         public bool isConnected()
         {
-            if( this.isconnected )
+            if (this.isconnected)
             {
                 TimeSpan newtime = DateTime.Now - tick;
-                if( newtime.TotalMinutes > 5 )
+                if (newtime.TotalMinutes > 5)
                 {
                     MySqlConnection tmp;
                     Logger.ShowSQL("ActorDB:Pinging SQL Server to keep the connection alive", null);
@@ -95,7 +95,7 @@ namespace SagaDB
                     tick = DateTime.Now;
                 }
 
-                if( db.State == System.Data.ConnectionState.Broken || db.State == System.Data.ConnectionState.Closed )
+                if (db.State == System.Data.ConnectionState.Broken || db.State == System.Data.ConnectionState.Closed)
                 {
                     this.isconnected = false;
                 }
@@ -135,7 +135,7 @@ namespace SagaDB
                 if (sqlstr.Substring(sqlstr.Length - 1) != ";") sqlstr += ";";
                 sqlstr += "SELECT LAST_INSERT_ID();";
                 index = Convert.ToUInt32(MySqlHelper.ExecuteScalar(db, sqlstr));
-                
+
             }
             catch (Exception ex)
             {
@@ -170,14 +170,14 @@ namespace SagaDB
             }
             catch (Exception ex)
             {
-                Logger.ShowSQL("Error on query:" + sqlstr, null);                
+                Logger.ShowSQL("Error on query:" + sqlstr, null);
                 Logger.ShowSQL(ex, null);
                 DatabaseWaitress.LeaveCriticalArea();
                 if (criticalarea)
                     ClientManager.EnterCriticalArea();
                 return null;
             }
-            
+
         }
 
         private void CheckSQLString(ref string str)
@@ -185,20 +185,20 @@ namespace SagaDB
             str = str.Replace("'", "\\'");
         }
 
-        public void CreateChar( ref ActorPC aChar, int account_id )
+        public void CreateChar(ref ActorPC aChar, int account_id)
         {
             string sqlstr;
-            if( aChar != null && this.isConnected() == true )
+            if (aChar != null && this.isConnected() == true)
             {
                 string x, y, z;
                 x = aChar.x.ToString();
                 y = aChar.y.ToString();
                 z = aChar.z.ToString();
-                if( x.Contains( "," ) ) x.Replace( ",", "." );
-                if( y.Contains( "," ) ) y.Replace( ",", "." );
-                if( z.Contains( "," ) ) z.Replace( ",", "." );
+                if (x.Contains(",")) x.Replace(",", ".");
+                if (y.Contains(",")) y.Replace(",", ".");
+                if (z.Contains(",")) z.Replace(",", ".");
                 aChar.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
-                sqlstr = string.Format( "INSERT INTO `char`(`account_id`,`name`,`face`,`details`,`sex`,`race`,`job`," +
+                sqlstr = string.Format("INSERT INTO `char`(`account_id`,`name`,`face`,`details`,`sex`,`race`,`job`," +
                     "`cEXP`,`jEXP`,`cLevel`,`jLevel`,`pendingDeletion`,`validationKey`,`HP`,`maxHP`,`SP`,`maxSP`,`LC`," +
                     "`maxLC`,`LP`,`maxLP`,`str`,`dex`,`intel`,`con`,`luk`,`stpoints`,`slots`,`weaponName`,`weaponType`," +
                     "`GMLevel`,`mapID`,`worldID`,`x`,`y`,`z`,`sightRange`,`maxMoveRange`," +
@@ -206,13 +206,13 @@ namespace SagaDB
                     "'{8}','{9}','{10}','{11}','{12}','{13}','{14}','{15}','{16}','{17}','{18}','{19}','{20}','{21}','{22}'," +
                     "'{23}','{24}','{25}','{26}','{27}','{28}','{29}','{30}','{31}','{32}','{33}','{34}','{35}','{36}','{37}'," +
                     "'{38}','{39}','{40}','{41}','{42}','{43}','{44}','{45}','{46}','{47}')",
-                    account_id, aChar.name, bytes2HexString( aChar.face ), bytes2HexString( aChar.details ),
+                    account_id, aChar.name, bytes2HexString(aChar.face), bytes2HexString(aChar.details),
                     (int)aChar.sex, (int)aChar.race, (int)aChar.job, aChar.cExp, aChar.jExp, aChar.cLevel, aChar.jLevel, aChar.pendingDeletion,
                     aChar.validationKey, aChar.HP, aChar.maxHP, aChar.SP, aChar.maxSP, aChar.LC, aChar.maxLC, aChar.LP, aChar.maxLP,
-                    aChar.str, aChar.dex, aChar.intel, aChar.con, aChar.luk, aChar.stpoints, bytes2HexString( aChar.slots ), aChar.weaponName,
+                    aChar.str, aChar.dex, aChar.intel, aChar.con, aChar.luk, aChar.stpoints, bytes2HexString(aChar.slots), aChar.weaponName,
                     aChar.weaponType, aChar.GMLevel, aChar.mapID, aChar.worldID, x,
                     y, z, aChar.sightRange, aChar.maxMoveRange, aChar.state, (byte)aChar.stance,
-                    aChar.guild, aChar.party, aChar.yaw, aChar.zeny, aChar.save_map, aChar.save_x, aChar.save_y, aChar.save_z );
+                    aChar.guild, aChar.party, aChar.yaw, aChar.zeny, aChar.save_map, aChar.save_x, aChar.save_y, aChar.save_z);
                 try
                 {
                     SQLExecuteNonQuery(sqlstr);
@@ -222,15 +222,15 @@ namespace SagaDB
                     Console.WriteLine("Error: can't create new char in database" + ex.Message);
                     throw new Exception("can't create new char in database");
                 }
-                aChar.charID = getCharID( aChar.name );
-                SaveInv( aChar );
-                SaveWeapon( aChar );
-                SaveSkills( aChar );
-                SaveQuest( aChar );
+                aChar.charID = getCharID(aChar.name);
+                SaveInv(aChar);
+                SaveWeapon(aChar);
+                SaveSkills(aChar);
+                SaveQuest(aChar);
             }
         }
 
-        private uint getCharID( string name )
+        private uint getCharID(string name)
         {
             string sqlstr;
             DataRowCollection result = null;
@@ -245,37 +245,37 @@ namespace SagaDB
             }
             catch (Exception ex)
             {
-                Console.WriteLine( "Error: can't get chars from database" + ex.Message );
+                Console.WriteLine("Error: can't get chars from database" + ex.Message);
 
-                throw new Exception( "can't get chars from database" );
+                throw new Exception("can't get chars from database");
             }
             return (uint)result[0]["charID"];
 
         }
 
-        private string bytes2HexString( byte[] b )
+        private string bytes2HexString(byte[] b)
         {
             string tmp = "";
             int i;
-            for( i = 0; i < b.Length; i++ )
+            for (i = 0; i < b.Length; i++)
             {
-                string tmp2 = Conversion.Hex( b[i] );
-                if( tmp2.Length == 1 ) tmp2 = "0" + tmp2;
+                string tmp2 = Conversion.Hex(b[i]);
+                if (tmp2.Length == 1) tmp2 = "0" + tmp2;
                 tmp = tmp + tmp2;
             }
             return tmp;
         }
-        private string uint2HexString( uint[] b )
+        private string uint2HexString(uint[] b)
         {
             string tmp = "";
             int i;
-            if( b == null ) return "";
-            for( i = 0; i < b.Length; i++ )
+            if (b == null) return "";
+            for (i = 0; i < b.Length; i++)
             {
-                string tmp2 = Conversion.Hex( b[i] );
-                if( tmp2.Length != 8 )
+                string tmp2 = Conversion.Hex(b[i]);
+                if (tmp2.Length != 8)
                 {
-                    for( int j = 0; j < 8 - tmp2.Length; j++ )
+                    for (int j = 0; j < 8 - tmp2.Length; j++)
                     {
                         tmp2 = "0" + tmp2;
                     }
@@ -285,11 +285,11 @@ namespace SagaDB
             return tmp;
         }
 
-        private byte[] HexStr2Bytes( string s )
+        private byte[] HexStr2Bytes(string s)
         {
             byte[] b = new byte[s.Length / 2];
             int i;
-            for( i = 0; i < s.Length / 2; i++ )
+            for (i = 0; i < s.Length / 2; i++)
             {
                 //b[i] = Conversions.ToByte( "&H" + s.Substring( i * 2, 2 ) );
                 b[i] = Conversions.ToByte(s.Substring(i * 2, 2));
@@ -297,11 +297,11 @@ namespace SagaDB
             return b;
         }
 
-        private uint[] HexStr2uint( string s )
+        private uint[] HexStr2uint(string s)
         {
             uint[] b = new uint[s.Length / 8];
             int i;
-            for( i = 0; i < s.Length / 8; i++ )
+            for (i = 0; i < s.Length / 8; i++)
             {
                 //b[i] = (uint)Conversions.ToInteger("&H" + s.Substring(i * 8, 8));
                 b[i] = (uint)Conversions.ToInteger(s.Substring(i * 8, 8));
@@ -309,19 +309,19 @@ namespace SagaDB
             return b;
         }
 
-        public void SaveChar( ActorPC aChar )
+        public void SaveChar(ActorPC aChar)
         {
             string sqlstr;
-            if( aChar != null && this.isConnected() == true )
+            if (aChar != null && this.isConnected() == true)
             {
                 string x, y, z;
                 x = aChar.x.ToString();
                 y = aChar.y.ToString();
                 z = aChar.z.ToString();
-                if( x.Contains( "," ) ) x = x.Replace( ",", "." );
-                if( y.Contains( "," ) ) y = y.Replace( ",", "." );
-                if( z.Contains( "," ) ) z = z.Replace( ",", "." );
-                if( aChar.ShorcutIDs == null ) aChar.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
+                if (x.Contains(",")) x = x.Replace(",", ".");
+                if (y.Contains(",")) y = y.Replace(",", ".");
+                if (z.Contains(",")) z = z.Replace(",", ".");
+                if (aChar.ShorcutIDs == null) aChar.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
                 sqlstr = string.Format("UPDATE `char` SET `name`='{0}',`face`='{1}',`details`='{2}',`sex`='{3}',`race`='{4}',`job`='{5}'," +
                      "`cEXP`='{6}',`jEXP`='{7}',`cLevel`='{8}',`jLevel`='{9}',`pendingDeletion`='{10}',`validationKey`='{11}',`HP`='{12}',`maxHP`='{13}',`SP`='{14}',`maxSP`='{15}',`LC`='{16}'," +
                      "`maxLC`='{17}',`LP`='{18}',`maxLP`='{19}',`str`='{20}',`dex`='{21}',`intel`='{22}',`con`='{23}',`luk`='{24}',`stpoints`='{25}',`slots`='{26}',`weaponName`='{27}',`weaponType`='{28}'," +
@@ -339,15 +339,15 @@ namespace SagaDB
                     SQLExecuteNonQuery(sqlstr);
                 }
                 catch (Exception ex)
-                {                    
-                    Console.WriteLine( "Error: can't create new char in database" + ex.Message );
+                {
+                    Console.WriteLine("Error: can't create new char in database" + ex.Message);
                     throw new Exception("can't create new char in database", ex);
                 }
-                
+
                 // * no more needed since all data are updated when changed
-                SaveInv( aChar );
+                SaveInv(aChar);
                 //SaveStorage(aChar);
-                SaveWeapon( aChar );
+                SaveWeapon(aChar);
                 //SaveShortcuts( aChar );
                 //SaveSkills( aChar );
                 //SaveQuest( aChar );
@@ -356,7 +356,7 @@ namespace SagaDB
             }
         }
 
-        private void LoadSkills( ref ActorPC aChar )
+        private void LoadSkills(ref ActorPC aChar)
         {
             string sqlstr;
             int i;
@@ -365,18 +365,18 @@ namespace SagaDB
             try
             {
                 result = SQLExecuteQuery(sqlstr);
-            }            
+            }
             catch (Exception ex)
             {
-                Logger.ShowError( " can't get skills from database" + ex.Message, null );
-                Logger.ShowError( ex, null );
+                Logger.ShowError(" can't get skills from database" + ex.Message, null);
+                Logger.ShowError(ex, null);
             }
             aChar.BattleSkills = new Dictionary<uint, SkillInfo>();
             aChar.LivingSkills = new Dictionary<uint, SkillInfo>();
             aChar.SpecialSkills = new Dictionary<uint, SkillInfo>();
             aChar.InactiveSkills = new Dictionary<uint, SkillInfo>();
 
-            for( i = 0; i < result.Count; i++ )
+            for (i = 0; i < result.Count; i++)
             {
                 try
                 {
@@ -417,34 +417,34 @@ namespace SagaDB
 
         }
 
-        private void SaveSkills( ActorPC aChar )
+        private void SaveSkills(ActorPC aChar)
         {
             string sqlstr = "DELETE FROM `skills` WHERE charID='" + aChar.charID + "';";
-            if( aChar.BattleSkills == null ) aChar.BattleSkills = new Dictionary<uint, SkillInfo>();
-            if( aChar.SpecialSkills == null ) aChar.SpecialSkills = new Dictionary<uint, SkillInfo>();
-            if( aChar.LivingSkills == null ) aChar.LivingSkills = new Dictionary<uint, SkillInfo>();
-            if( aChar.InactiveSkills == null ) aChar.InactiveSkills = new Dictionary<uint, SkillInfo>();
-            foreach( uint i in aChar.BattleSkills.Keys )
+            if (aChar.BattleSkills == null) aChar.BattleSkills = new Dictionary<uint, SkillInfo>();
+            if (aChar.SpecialSkills == null) aChar.SpecialSkills = new Dictionary<uint, SkillInfo>();
+            if (aChar.LivingSkills == null) aChar.LivingSkills = new Dictionary<uint, SkillInfo>();
+            if (aChar.InactiveSkills == null) aChar.InactiveSkills = new Dictionary<uint, SkillInfo>();
+            foreach (uint i in aChar.BattleSkills.Keys)
             {
-                sqlstr += string.Format( "INSERT INTO `skills`(`charID`,`type`,`skillID`,`exp`,`slot`) VALUE('{0}','{1}','{2}','{3}','{4}');",
-                    aChar.charID, 0, i, aChar.BattleSkills[i].exp, aChar.BattleSkills[i].slot );
-                
+                sqlstr += string.Format("INSERT INTO `skills`(`charID`,`type`,`skillID`,`exp`,`slot`) VALUE('{0}','{1}','{2}','{3}','{4}');",
+                    aChar.charID, 0, i, aChar.BattleSkills[i].exp, aChar.BattleSkills[i].slot);
+
             }
-            foreach( uint i in aChar.LivingSkills.Keys )
+            foreach (uint i in aChar.LivingSkills.Keys)
             {
-                sqlstr += string.Format( "INSERT INTO `skills`(`charID`,`type`,`skillID`,`exp`,`slot`) VALUE('{0}','{1}','{2}','{3}','{4}');",
-                aChar.charID, 1, i, aChar.LivingSkills[i].exp, aChar.LivingSkills[i].slot );
+                sqlstr += string.Format("INSERT INTO `skills`(`charID`,`type`,`skillID`,`exp`,`slot`) VALUE('{0}','{1}','{2}','{3}','{4}');",
+                aChar.charID, 1, i, aChar.LivingSkills[i].exp, aChar.LivingSkills[i].slot);
             }
-            foreach( uint i in aChar.SpecialSkills.Keys )
+            foreach (uint i in aChar.SpecialSkills.Keys)
             {
-                sqlstr += string.Format( "INSERT INTO `skills`(`charID`,`type`,`skillID`,`exp`,`slot`) VALUE('{0}','{1}','{2}','{3}','{4}');",
-                aChar.charID, 2, i, aChar.SpecialSkills[i].exp, aChar.SpecialSkills[i].slot );
+                sqlstr += string.Format("INSERT INTO `skills`(`charID`,`type`,`skillID`,`exp`,`slot`) VALUE('{0}','{1}','{2}','{3}','{4}');",
+                aChar.charID, 2, i, aChar.SpecialSkills[i].exp, aChar.SpecialSkills[i].slot);
             }
 
-            foreach( uint i in aChar.InactiveSkills.Keys )
+            foreach (uint i in aChar.InactiveSkills.Keys)
             {
-                sqlstr += string.Format( "INSERT INTO `skills`(`charID`,`type`,`skillID`,`exp`,`slot`) VALUE('{0}','{1}','{2}','{3}','{4}');",
-                aChar.charID, 3, i, aChar.InactiveSkills[i].exp, aChar.InactiveSkills[i].slot );                
+                sqlstr += string.Format("INSERT INTO `skills`(`charID`,`type`,`skillID`,`exp`,`slot`) VALUE('{0}','{1}','{2}','{3}','{4}');",
+                aChar.charID, 3, i, aChar.InactiveSkills[i].exp, aChar.InactiveSkills[i].slot);
             }
             try
             {
@@ -457,17 +457,17 @@ namespace SagaDB
             }
         }
 
-        private void SaveShortcuts( ActorPC aChar )
+        private void SaveShortcuts(ActorPC aChar)
         {
             string sqlstr = "DELETE FROM `shortcuts` WHERE charID='" + aChar.charID + "'";
-            if( aChar.ShorcutIDs == null ) aChar.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
-            foreach( byte i in aChar.ShorcutIDs.Keys )
+            if (aChar.ShorcutIDs == null) aChar.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
+            foreach (byte i in aChar.ShorcutIDs.Keys)
             {
-                sqlstr = string.Format( "INSERT INTO `shortcuts`(`charID`,`slotnumber`,`type`,`itemID`) VALUE('{0}','{1}','{2}','{3}')",
-                aChar.charID, i, aChar.ShorcutIDs[i].type, aChar.ShorcutIDs[i].ID );
+                sqlstr = string.Format("INSERT INTO `shortcuts`(`charID`,`slotnumber`,`type`,`itemID`) VALUE('{0}','{1}','{2}','{3}')",
+                aChar.charID, i, aChar.ShorcutIDs[i].type, aChar.ShorcutIDs[i].ID);
                 try
                 {
-                    MySqlHelper.ExecuteNonQuery( db, sqlstr, null );
+                    MySqlHelper.ExecuteNonQuery(db, sqlstr, null);
                 }
                 catch (MySqlException ex)
                 {
@@ -475,14 +475,14 @@ namespace SagaDB
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine( "Error: can't insert new weapon in database" + ex.Message );
+                    Console.WriteLine("Error: can't insert new weapon in database" + ex.Message);
 
                 }
             }
 
         }
 
-        private void SaveQuest( ActorPC aChar )
+        private void SaveQuest(ActorPC aChar)
         {
             string sqlstr = "DELETE FROM `quest` WHERE charID='" + aChar.charID + "';";
             if (aChar.QuestTable == null) aChar.QuestTable = new Dictionary<uint, SagaDB.Quest.Quest>();
@@ -490,14 +490,14 @@ namespace SagaDB
             foreach (uint i in aChar.QuestTable.Keys)
             {
                 string tmp = "";
-                foreach( uint j in aChar.QuestTable[i].Steps.Keys )
+                foreach (uint j in aChar.QuestTable[i].Steps.Keys)
                 {
                     Quest.Step step = aChar.QuestTable[i].Steps[j];
                     tmp = tmp + step.step.ToString() + "," + step.ID.ToString() + "," + step.Status.ToString() + "," + step.nextStep.ToString() + ",";
                 }
-                tmp = tmp.Substring( 0, tmp.Length - 1 );
-                sqlstr += string.Format( "INSERT INTO `quest`(`charID`,`questID`,`step`,`type`) VALUE('{0}','{1}','{2}','0');",
-                aChar.charID, aChar.QuestTable[i].ID, tmp );                
+                tmp = tmp.Substring(0, tmp.Length - 1);
+                sqlstr += string.Format("INSERT INTO `quest`(`charID`,`questID`,`step`,`type`) VALUE('{0}','{1}','{2}','0');",
+                aChar.charID, aChar.QuestTable[i].ID, tmp);
             }
             if (aChar.PersonalQuestTable == null) aChar.PersonalQuestTable = new Dictionary<uint, SagaDB.Quest.Quest>();
             foreach (uint i in aChar.PersonalQuestTable.Keys)
@@ -510,7 +510,7 @@ namespace SagaDB
                 }
                 tmp = tmp.Substring(0, tmp.Length - 1);
                 sqlstr += string.Format("INSERT INTO `quest`(`charID`,`questID`,`step`,`type`) VALUE('{0}','{1}','{2}','1');",
-                aChar.charID, aChar.PersonalQuestTable[i].ID, tmp);               
+                aChar.charID, aChar.PersonalQuestTable[i].ID, tmp);
             }
             try
             {
@@ -523,19 +523,19 @@ namespace SagaDB
             }
         }
 
-        private void SaveJLevel( ActorPC aChar )
+        private void SaveJLevel(ActorPC aChar)
         {
             string sqlstr = "DELETE FROM `joblevel` WHERE charID='" + aChar.charID + "';";
-            if( aChar.JobLevels == null ) aChar.JobLevels = new Dictionary<JobType, byte>();
-            foreach( JobType i in aChar.JobLevels.Keys )
+            if (aChar.JobLevels == null) aChar.JobLevels = new Dictionary<JobType, byte>();
+            foreach (JobType i in aChar.JobLevels.Keys)
             {
-                sqlstr += string.Format( "INSERT INTO `joblevel`(`charID`,`job`,`level`) VALUE('{0}','{1}','{2}');",
-                aChar.charID, (byte)i, aChar.JobLevels[i] );                
+                sqlstr += string.Format("INSERT INTO `joblevel`(`charID`,`job`,`level`) VALUE('{0}','{1}','{2}');",
+                aChar.charID, (byte)i, aChar.JobLevels[i]);
             }
             try
             {
                 SQLExecuteNonQuery(sqlstr);
-            }            
+            }
             catch (Exception ex)
             {
                 Console.WriteLine("Error: can't insert new job levels in database" + ex.Message);
@@ -563,7 +563,7 @@ namespace SagaDB
             }
         }
 
-        private void LoadJLevel( ref ActorPC aChar )
+        private void LoadJLevel(ref ActorPC aChar)
         {
             string sqlstr;
             int i;
@@ -579,7 +579,7 @@ namespace SagaDB
                 Logger.ShowError(ex, null);
             }
             aChar.JobLevels = new Dictionary<JobType, byte>();
-            for( i = 0; i < result.Count; i++ )
+            for (i = 0; i < result.Count; i++)
             {
                 try
                 {
@@ -622,7 +622,7 @@ namespace SagaDB
 
         }
 
-        private void LoadShortcuts( ref ActorPC aChar )
+        private void LoadShortcuts(ref ActorPC aChar)
         {
             string sqlstr;
             int i;
@@ -634,23 +634,23 @@ namespace SagaDB
             }
             catch (Exception ex)
             {
-                Logger.ShowError( " can't get shortcuts from database" + ex.Message, null );
-                Logger.ShowError( ex, null );
+                Logger.ShowError(" can't get shortcuts from database" + ex.Message, null);
+                Logger.ShowError(ex, null);
             }
             aChar.ShorcutIDs = new Dictionary<byte, ActorPC.Shortcut>();
-            for( i = 0; i < result.Count; i++ )
+            for (i = 0; i < result.Count; i++)
             {
                 byte slot;
                 ActorPC.Shortcut sc = new ActorPC.Shortcut();
                 slot = (byte)result[i]["slotnumber"];
                 sc.type = (byte)result[i]["type"];
                 sc.ID = (uint)result[i]["itemID"];
-                aChar.ShorcutIDs.Add( slot, sc );
+                aChar.ShorcutIDs.Add(slot, sc);
             }
 
         }
 
-        private void LoadQuest( ref ActorPC aChar )
+        private void LoadQuest(ref ActorPC aChar)
         {
             string sqlstr;
             int i;
@@ -662,12 +662,12 @@ namespace SagaDB
             }
             catch (Exception ex)
             {
-                Logger.ShowError( " can't get quests from database" + ex.Message, null );
-                Logger.ShowError( ex, null );
+                Logger.ShowError(" can't get quests from database" + ex.Message, null);
+                Logger.ShowError(ex, null);
             }
             aChar.QuestTable = new Dictionary<uint, SagaDB.Quest.Quest>();
             aChar.PersonalQuestTable = new Dictionary<uint, SagaDB.Quest.Quest>();
-            for( i = 0; i < result.Count; i++ )
+            for (i = 0; i < result.Count; i++)
             {
                 try
                 {
@@ -704,7 +704,7 @@ namespace SagaDB
 
         }
 
-        private void SaveInv( ActorPC aChar )
+        private void SaveInv(ActorPC aChar)
         {
             int[] tmp;
             int equip;
@@ -712,22 +712,22 @@ namespace SagaDB
             string sqlstr = "DELETE FROM `inventory` WHERE charID='" + aChar.charID + "';";
             tmp = aChar.inv.GetEquipIDs();
 
-            for( int j = 0; j < tmp.Length; j++ )
+            for (int j = 0; j < tmp.Length; j++)
             {
                 Item tmpitem;
-                if( tmp[j] != 0 )
+                if (tmp[j] != 0)
                 {
                     tmpitem = aChar.inv.EquipList[(EQUIP_SLOT)j];
-                    sqlstr += string.Format( "INSERT INTO `inventory`(`charID`,`nameid`,`amount`,`creatorName`,`durability`,`equip`) VALUE('{0}','{1}','{2}','{3}','{4}','{5}');",
-                aChar.charID, tmpitem.id, tmpitem.stack, tmpitem.creatorName, tmpitem.durability, j );
-                   
+                    sqlstr += string.Format("INSERT INTO `inventory`(`charID`,`nameid`,`amount`,`creatorName`,`durability`,`equip`) VALUE('{0}','{1}','{2}','{3}','{4}','{5}');",
+                aChar.charID, tmpitem.id, tmpitem.stack, tmpitem.creatorName, tmpitem.durability, j);
+
                 }
             }
-            foreach( Items.Item i in inv )
+            foreach (Items.Item i in inv)
             {
                 equip = -1;
-                sqlstr += string.Format( "INSERT INTO `inventory`(`charID`,`nameid`,`amount`,`creatorName`,`durability`,`equip`) VALUE('{0}','{1}','{2}','{3}','{4}','{5}');",
-                aChar.charID, i.id, i.stack, i.creatorName, i.durability, equip );                
+                sqlstr += string.Format("INSERT INTO `inventory`(`charID`,`nameid`,`amount`,`creatorName`,`durability`,`equip`) VALUE('{0}','{1}','{2}','{3}','{4}','{5}');",
+                aChar.charID, i.id, i.stack, i.creatorName, i.durability, equip);
             }
             try
             {
@@ -738,7 +738,7 @@ namespace SagaDB
                 Console.WriteLine("Error: can't insert new inventory in database" + ex.Message);
                 throw new Exception("can't insert new inventory in database");
             }
-            
+
         }
 
         private void SaveStorage(ActorPC aChar)
@@ -746,7 +746,7 @@ namespace SagaDB
             int equip;
             List<Items.Item> inv = aChar.inv.GetStorageList();
             string sqlstr = "DELETE FROM `storage` WHERE charID='" + aChar.charID + "';";
-            
+
             foreach (Items.Item i in inv)
             {
                 equip = -1;
@@ -765,7 +765,7 @@ namespace SagaDB
 
         }
 
-        public void DeleteChar( ActorPC aChar )
+        public void DeleteChar(ActorPC aChar)
         {
             string sqlstr;
             sqlstr = "DELETE FROM `char` WHERE charID='" + aChar.charID + "';";
@@ -774,6 +774,8 @@ namespace SagaDB
             sqlstr += "DELETE FROM `shortcuts` WHERE charID='" + aChar.charID + "';" + "DELETE FROM `skills` WHERE charID='" + aChar.charID + "';" +
                 "DELETE FROM `quest` WHERE charID='" + aChar.charID + "';" + "DELETE FROM `joblevel` WHERE charID='" + aChar.charID + "';" +
                 "DELETE FROM `storage` WHERE charID='" + aChar.charID + "';";
+            sqlstr += "DELETE FROM `list_friends` WHERE CharId='" + aChar.charID + "';";
+            sqlstr += "DELETE FROM `list_blacklist` WHERE CharId='" + aChar.charID + "';";
 
             try
             {
@@ -781,12 +783,12 @@ namespace SagaDB
             }
             catch (Exception ex)
             {
-                Console.WriteLine( "Error: can't delete char in database" + ex.Message );
-                throw new Exception( "can't insert new inventory in database" );
+                Console.WriteLine("Error: can't delete char in database" + ex.Message);
+                throw new Exception("can't insert new inventory in database");
             }
         }
 
-        public ActorPC GetChar( uint charID )
+        public ActorPC GetChar(uint charID)
         {
             string sqlstr;
             DataRow result = null;
@@ -800,20 +802,20 @@ namespace SagaDB
             catch (Exception ex)
             {
                 Logger.ShowError(ex);
-                Console.WriteLine( "Error: can't find char with charID:" + charID );
-                Logger.ShowInfo("Table count:" + tmp.Tables.Count, null);                
+                Console.WriteLine("Error: can't find char with charID:" + charID);
+                Logger.ShowInfo("Table count:" + tmp.Tables.Count, null);
                 return null;
             }
-            pc = new ActorPC( (byte)result["worldID"], (string)result["name"] );
+            pc = new ActorPC((byte)result["worldID"], (string)result["name"]);
             pc.Tasks = new Dictionary<string, MultiRunTask>();
-            pc.inv = new Inventory( 50 );
+            pc.inv = new Inventory(50);
             pc.charID = charID;
             pc.name = (string)result["name"];
-            pc.face = HexStr2Bytes( (string)result["face"] );
-            pc.details = HexStr2Bytes( (string)result["details"] );
-            pc.sex = (GenderType)Convert.ToInt32( result["sex"] );
-            pc.race = (RaceType)Convert.ToInt32( ( result["race"] ) );
-            pc.job = (JobType)Convert.ToInt32( ( result["job"] ) );
+            pc.face = HexStr2Bytes((string)result["face"]);
+            pc.details = HexStr2Bytes((string)result["details"]);
+            pc.sex = (GenderType)Convert.ToInt32(result["sex"]);
+            pc.race = (RaceType)Convert.ToInt32((result["race"]));
+            pc.job = (JobType)Convert.ToInt32((result["job"]));
             pc.cExp = (uint)result["cEXP"];
             pc.jExp = (uint)result["jEXP"];
             pc.cLevel = (uint)result["cLevel"];
@@ -834,7 +836,7 @@ namespace SagaDB
             pc.con = (byte)result["con"];
             pc.luk = (byte)result["luk"];
             pc.stpoints = (byte)result["stpoints"];
-            pc.slots = HexStr2Bytes( (string)result["slots"] );
+            pc.slots = HexStr2Bytes((string)result["slots"]);
             pc.weaponName = (string)result["weaponName"];
             pc.weaponType = (int)result["weaponType"];
             pc.GMLevel = (uint)result["GMLevel"];
@@ -857,18 +859,126 @@ namespace SagaDB
             pc.Scenario = (uint)result["Scenario"];
             pc.online = (byte)result["online"];
             pc.muted = (byte)result["muted"];
-            LoadInv( ref pc );
+            LoadInv(ref pc);
             LoadStorage(ref pc);
-            LoadWeapon( ref pc );
+            LoadWeapon(ref pc);
             //LoadShortcuts( ref pc );
-            LoadSkills( ref pc );
-            LoadQuest( ref pc );
-            LoadJLevel( ref pc );
+            LoadSkills(ref pc);
+            LoadQuest(ref pc);
+            LoadJLevel(ref pc);
             LoadMapInfo(ref pc);
+            pc.Friends = new List<string>();
+            pc.Blacklist = new List<KeyValuePair<string, byte>>();
+            LoadFriends(ref pc);
+            LoadBlacklist(ref pc);
             return pc;
         }
 
-        private void LoadInv( ref ActorPC aChar )
+        private void LoadFriends(ref ActorPC pc)
+        {
+            try
+            {
+                string sqlstr = "SELECT `FriendName` FROM `list_friends` WHERE CharId='" + pc.charID + "' LIMIT 50;";
+                DataRowCollection rows = SQLExecuteQuery(sqlstr);
+                if (rows == null) return;
+                for (int i = 0; i < rows.Count; i++)
+                    pc.Friends.Add((string)rows[i]["FriendName"]);
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowSQL("LoadFriends (optional table list_friends): " + ex.Message, null);
+            }
+        }
+
+        private void LoadBlacklist(ref ActorPC pc)
+        {
+            try
+            {
+                string sqlstr = "SELECT `FriendName`,`Reason` FROM `list_blacklist` WHERE CharId='" + pc.charID + "' LIMIT 10;";
+                DataRowCollection rows = SQLExecuteQuery(sqlstr);
+                if (rows == null) return;
+                for (int i = 0; i < rows.Count; i++)
+                    pc.Blacklist.Add(new KeyValuePair<string, byte>((string)rows[i]["FriendName"], (byte)rows[i]["Reason"]));
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowSQL("LoadBlacklist (optional table list_blacklist): " + ex.Message, null);
+            }
+        }
+
+        public bool InsertFriend(ActorPC owner, string friendName)
+        {
+            if (owner == null || string.IsNullOrEmpty(friendName) || !this.isConnected()) return false;
+            string fn = friendName;
+            CheckSQLString(ref fn);
+            string sqlstr = "INSERT INTO `list_friends` (`CharId`,`FriendName`) VALUES ('" + owner.charID + "','" + fn + "');";
+            try
+            {
+                SQLExecuteNonQuery(sqlstr);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowSQL("InsertFriend: " + ex.Message, null);
+                return false;
+            }
+        }
+
+        public bool DeleteFriend(ActorPC owner, string friendName)
+        {
+            if (owner == null || string.IsNullOrEmpty(friendName) || !this.isConnected()) return false;
+            string fn = friendName;
+            CheckSQLString(ref fn);
+            string sqlstr = "DELETE FROM `list_friends` WHERE `CharId`='" + owner.charID + "' AND `FriendName`='" + fn + "' LIMIT 1;";
+            try
+            {
+                SQLExecuteNonQuery(sqlstr);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowSQL("DeleteFriend: " + ex.Message, null);
+                return false;
+            }
+        }
+
+        public bool InsertBlacklist(ActorPC owner, string name, byte reason)
+        {
+            if (owner == null || string.IsNullOrEmpty(name) || !this.isConnected()) return false;
+            string fn = name;
+            CheckSQLString(ref fn);
+            string sqlstr = "INSERT INTO `list_blacklist` (`CharId`,`FriendName`,`Reason`) VALUES ('" + owner.charID + "','" + fn + "','" + reason + "');";
+            try
+            {
+                SQLExecuteNonQuery(sqlstr);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowSQL("InsertBlacklist: " + ex.Message, null);
+                return false;
+            }
+        }
+
+        public bool DeleteBlacklist(ActorPC owner, string name)
+        {
+            if (owner == null || string.IsNullOrEmpty(name) || !this.isConnected()) return false;
+            string fn = name;
+            CheckSQLString(ref fn);
+            string sqlstr = "DELETE FROM `list_blacklist` WHERE `CharId`='" + owner.charID + "' AND `FriendName`='" + fn + "' LIMIT 1;";
+            try
+            {
+                SQLExecuteNonQuery(sqlstr);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Logger.ShowSQL("DeleteBlacklist: " + ex.Message, null);
+                return false;
+            }
+        }
+
+        private void LoadInv(ref ActorPC aChar)
         {
             string sqlstr;
             int i;
@@ -880,21 +990,21 @@ namespace SagaDB
             }
             catch (Exception ex)
             {
-                Console.WriteLine( "Error: can't get inventoris from database" + ex.Message );
-                throw new Exception( "can't get inventoris from database" );
+                Console.WriteLine("Error: can't get inventoris from database" + ex.Message);
+                throw new Exception("can't get inventoris from database");
             }
-            for( i = 0; i < result.Count; i++ )
+            for (i = 0; i < result.Count; i++)
             {
                 int equip;
                 byte index, amount;
                 Item item = null;
                 try
                 {
-                         item = new Item(
-                        (int)result[i]["nameid"],
-                        (string)result[i]["creatorName"],
-                        (ushort)result[i]["durability"],
-                        (byte)result[i]["amount"]);
+                    item = new Item(
+                   (int)result[i]["nameid"],
+                   (string)result[i]["creatorName"],
+                   (ushort)result[i]["durability"],
+                   (byte)result[i]["amount"]);
                 }
                 catch (Exception)
                 {
@@ -938,12 +1048,12 @@ namespace SagaDB
                     (byte)result[i]["amount"]);
                 equip = Convert.ToInt32(result[i]["equip"]);
                 item.equipSlot = equip;
-                item.dbID = (uint)result[i]["id"];                
-                aChar.inv.AddItemStorage(item, out index, out amount);               
+                item.dbID = (uint)result[i]["id"];
+                aChar.inv.AddItemStorage(item, out index, out amount);
             }
         }
 
-        private void LoadWeapon( ref ActorPC aChar )
+        private void LoadWeapon(ref ActorPC aChar)
         {
             string sqlstr;
             int i;
@@ -953,13 +1063,13 @@ namespace SagaDB
             {
                 result = SQLExecuteQuery(sqlstr);
             }
-            catch( Exception ex )
+            catch (Exception ex)
             {
-                Logger.ShowError( " can't get weapons from database" + ex.Message, null );
-                Logger.ShowError( ex, null );
+                Logger.ShowError(" can't get weapons from database" + ex.Message, null);
+                Logger.ShowError(ex, null);
             }
             aChar.Weapons = new List<Weapon>();
-            if( result.Count == 0 )
+            if (result.Count == 0)
             {
                 Weapon newweapon = new Weapon();
                 newweapon.name = aChar.weaponName;
@@ -971,9 +1081,9 @@ namespace SagaDB
                 newweapon.durability = 1000;
                 newweapon.active = 1;
                 newweapon.stones = new uint[6];
-                aChar.Weapons.Add( newweapon );
+                aChar.Weapons.Add(newweapon);
             }
-            for( i = 0; i < result.Count; i++ )
+            for (i = 0; i < result.Count; i++)
             {
                 Weapon weapon = new Weapon();
                 weapon.stones = new uint[6];
@@ -991,16 +1101,16 @@ namespace SagaDB
                 weapon.stones[3] = (uint)result[i]["slot4"];
                 weapon.stones[4] = (uint)result[i]["slot5"];
                 weapon.stones[5] = (uint)result[i]["slot6"];
-                aChar.Weapons.Add( weapon );
+                aChar.Weapons.Add(weapon);
             }
 
         }
 
-        private void SaveWeapon( ActorPC aChar )
+        private void SaveWeapon(ActorPC aChar)
         {
             string sqlstr = "DELETE FROM `weapon` WHERE charID='" + aChar.charID + "';";
             //MySqlHelper.ExecuteNonQuery( db, sqlstr, null );
-            if( aChar.Weapons == null )
+            if (aChar.Weapons == null)
             {
                 Weapon newweapon = new Weapon();
                 aChar.Weapons = new List<Weapon>();
@@ -1013,12 +1123,12 @@ namespace SagaDB
                 newweapon.durability = 1800;
                 newweapon.active = 1;
                 newweapon.stones = new uint[6];
-                aChar.Weapons.Add( newweapon );
+                aChar.Weapons.Add(newweapon);
             }
-            foreach( Weapon i in aChar.Weapons )
+            foreach (Weapon i in aChar.Weapons)
             {
-                sqlstr += string.Format( "INSERT INTO `weapon`(`charID`,`name`,`level`,`type`,`augeSkillID`,`exp`,`durability`,`U1`,`active`,`slot1`,`slot2`,`slot3`,`slot4`,`slot5`,`slot6`) VALUE('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}','{14}');",
-                aChar.charID, i.name, i.level, i.type, i.augeSkillID, i.exp, i.durability, i.U1, i.active, i.stones[0], i.stones[1], i.stones[2], i.stones[3], i.stones[4], i.stones[5] );
+                sqlstr += string.Format("INSERT INTO `weapon`(`charID`,`name`,`level`,`type`,`augeSkillID`,`exp`,`durability`,`U1`,`active`,`slot1`,`slot2`,`slot3`,`slot4`,`slot5`,`slot6`) VALUE('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}','{12}','{13}','{14}');",
+                aChar.charID, i.name, i.level, i.type, i.augeSkillID, i.exp, i.durability, i.U1, i.active, i.stones[0], i.stones[1], i.stones[2], i.stones[3], i.stones[4], i.stones[5]);
             }
             try
             {
@@ -1032,7 +1142,7 @@ namespace SagaDB
 
         }
 
-        public bool CharExists( byte worldID, string name )
+        public bool CharExists(byte worldID, string name)
         {
             string sqlstr;
             DataRowCollection result = null;
@@ -1043,15 +1153,15 @@ namespace SagaDB
             }
             catch (Exception ex)
             {
-                Console.WriteLine( "Error: can't get chars from database" + ex.Message );
+                Console.WriteLine("Error: can't get chars from database" + ex.Message);
 
-                throw new Exception( "can't get chars from database" );
+                throw new Exception("can't get chars from database");
             }
-            if( Convert.ToInt32(result[0][0]) > 0 ) return true;
+            if (Convert.ToInt32(result[0][0]) > 0) return true;
             return false;
         }
 
-        public uint[] GetCharIDs( int account_id )
+        public uint[] GetCharIDs(int account_id)
         {
             string sqlstr;
             uint[] buf;
@@ -1063,25 +1173,25 @@ namespace SagaDB
             }
             catch (Exception ex)
             {
-                Console.WriteLine( "Error: can't get chars from database" + ex.Message );
+                Console.WriteLine("Error: can't get chars from database" + ex.Message);
 
-                throw new Exception( "can't get chars from database" );
+                throw new Exception("can't get chars from database");
             }
-            if( result.Count == 0 ) return null;
+            if (result.Count == 0) return null;
             buf = new uint[result.Count];
-            for( int i = 0; i < buf.Length; i++ )
+            for (int i = 0; i < buf.Length; i++)
             {
                 buf[i] = (uint)result[i]["charID"];
             }
             return buf;
         }
 
-        public void SaveNpc( ActorNPC aNpc )
+        public void SaveNpc(ActorNPC aNpc)
         {
 
         }
 
-        public void DeleteNpc( ActorNPC aNpc )
+        public void DeleteNpc(ActorNPC aNpc)
         {
 
         }
@@ -1089,19 +1199,19 @@ namespace SagaDB
         public string GetCharName(uint id)
         {
             string sqlstr = "SELECT `name` FROM `char` WHERE `charID`='`" + id.ToString() + "';";
-            
+
             DataRowCollection result = SQLExecuteQuery(sqlstr);
             if (result.Count == 0)
                 return null;
             else
                 return (string)result[0]["name"];
-          
+
         }
 
         public void NewMail(Mail.Mail mail)
         {
             CheckSQLString(ref mail.content);
-            CheckSQLString(ref mail.topic);            
+            CheckSQLString(ref mail.topic);
             string sqlstr = string.Format("INSERT INTO `mail`(`sender`,`receiver`,`topic`,`date`," +
                 "`content`,`read`,`valid`,`zeny`,`itemID`,`creator`,`stack`,`durability`" +
                 ") VALUE('{0}','{1}','{2}','{3}','{4}','{5}','{6}','{7}','{8}','{9}','{10}','{11}');",
@@ -1153,7 +1263,7 @@ namespace SagaDB
                     break;
                 case SagaDB.Mail.SearchType.Sender:
                     sqlstr = "SELECT * FROM `mail` WHERE `sender`='" + value + "' LIMIT 20;";
-                    break;                
+                    break;
             }
             try
             {
@@ -1237,7 +1347,7 @@ namespace SagaDB
                 case SkillType.Inactive:
                     sqlstr = string.Format("INSERT INTO `skills`(`charID`,`type`,`skillID`,`exp`,`slot`) VALUE('{0}','{1}','{2}','{3}','{4}');",
                     pc.charID, 3, skill.ID, skill.exp, skill.slot);
-                    break; 
+                    break;
             }
             SQLExecuteScalar(sqlstr, ref skill.dbID);
         }
@@ -1376,7 +1486,7 @@ namespace SagaDB
         public void DeleteMapInfo(ActorPC pc, byte mapID)
         {
             string sqlstr = "DELETE FROM `MapInfo` WHERE charID='" + pc.charID + "' AND `map`='" + mapID + "';";
-            SQLExecuteNonQuery(sqlstr);        
+            SQLExecuteNonQuery(sqlstr);
         }
 
         public void NewStorage(ActorPC pc, Item item)
@@ -1416,7 +1526,7 @@ namespace SagaDB
             SQLExecuteNonQuery(sqlstr);
         }
 
-        public List<MarketplaceItem> SearchMarketItem(MarketSearchOption option, ushort pageindex,object vars)
+        public List<MarketplaceItem> SearchMarketItem(MarketSearchOption option, ushort pageindex, object vars)
         {
             string sqlstr = "";
             switch (option)
@@ -1461,13 +1571,13 @@ namespace SagaDB
             return item;
         }
 
-        public ActorNPC GetNpc( string scriptName )
+        public ActorNPC GetNpc(string scriptName)
         {
             return null;
 
         }
     }
 
-    
-    
+
+
 }

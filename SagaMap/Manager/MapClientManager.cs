@@ -58,13 +58,13 @@ namespace SagaMap.Manager
             commandTable.Add(0x030E, new Packets.Client.SendFall());
             commandTable.Add(0x030F, new Packets.Client.DiveDown());
             commandTable.Add(0x0310, new Packets.Client.DiveUp());
-            
+
             commandTable.Add(0x0401, new Packets.Client.GetChat());
             commandTable.Add(0x0402, new Packets.Client.GetWhisper());
 
             commandTable.Add(0x0501, new Packets.Client.MoveItem());
             //{	0x05,	0x02,	CGameSocket::p_ITEM_IVENLIST		},	// Character item demand
-	        //{	0x05,	0x03,	CGameSocket::p_ITEM-WARELIST		},	// Warehouse item demand
+            //{	0x05,	0x03,	CGameSocket::p_ITEM-WARELIST		},	// Warehouse item demand
             commandTable.Add(0x0504, new Packets.Client.SortInvList());
             // 	{	0x05,	0x05,	CGameSocket::p_ITEM_WARESORT		},	// Item alignment
             //	{	0x05,	0x06,	CGameSocket::p_ITEM_			},	// X
@@ -77,7 +77,7 @@ namespace SagaMap.Manager
             commandTable.Add(0x0512, new Packets.Client.WeaponAuge());
             commandTable.Add(0x0517, new Packets.Client.UseMap());
             commandTable.Add(0x0519, new Packets.Client.GetUseDye());
-            
+
             commandTable.Add(0x0601, new Packets.Client.NPCChat());
             commandTable.Add(0x0602, new Packets.Client.GetSelectButton());
             commandTable.Add(0x0603, new Packets.Client.LeaveNPC());
@@ -86,12 +86,12 @@ namespace SagaMap.Manager
             commandTable.Add(0x060B, new Packets.Client.SupplySelect());
             commandTable.Add(0x060D, new Packets.Client.SupplyExchange());
             commandTable.Add(0x060F, new Packets.Client.CorpseCleared());
-            
+
             commandTable.Add(0x0610, new Packets.Client.NPCDropList());
             commandTable.Add(0x0611, new Packets.Client.NPCShopSell());
             commandTable.Add(0x0612, new Packets.Client.NPCShopBuy());
             commandTable.Add(0x0614, new Packets.Client.DropSelect());
-            
+
             commandTable.Add(0x0607, new Packets.Client.GetHateInfo());
             commandTable.Add(0x0608, new Packets.Client.GetTargetAttribute());
             commandTable.Add(0x0609, new Packets.Client.GetTargetCancel());
@@ -144,7 +144,7 @@ namespace SagaMap.Manager
             commandTable.Add(0x0C07, new Packets.Client.GetOutbox());
             commandTable.Add(0x0C08, new Packets.Client.MailCancel());
             commandTable.Add(0x0C09, new Packets.Client.GetOutMail());
-            
+
             commandTable.Add(0x0E02, new Packets.Client.PartyInvite());
             commandTable.Add(0x0E03, new Packets.Client.PartyAccept());
             commandTable.Add(0x0E04, new Packets.Client.PartyQuit());
@@ -167,7 +167,7 @@ namespace SagaMap.Manager
 
             commandTable.Add(0x0502, new Packets.Client.GwLogout());
 
-            
+
             this.waitressQueue = new AutoResetEvent(false);
             this.waitressHasFinished = new ManualResetEvent(false);
             this.waitingWaitressesCount = 0;
@@ -180,7 +180,7 @@ namespace SagaMap.Manager
             check = new Thread(new ThreadStart(this.checkCriticalArea));
 #if DeadLockCheck
             check.Start();
-#endif        
+#endif
         }
 
         public static MapClientManager Instance
@@ -226,7 +226,7 @@ namespace SagaMap.Manager
                 ClientManager.LeaveCriticalArea();
             }
         }
-        
+
 
         public override void OnClientDisconnect(Client client)
         {
@@ -260,6 +260,20 @@ namespace SagaMap.Manager
             return null;
         }
 
+        public MapClient GetClientByNameCaseInsensitive(string name)
+        {
+            if (string.IsNullOrEmpty(name)) return null;
+            foreach (Client i in this.clients.Values)
+            {
+                if (i.GetType() != typeof(MapClient)) continue;
+                MapClient client = (MapClient)i;
+                if (client.Char == null) continue;
+                if (string.Equals(client.Char.name, name, StringComparison.OrdinalIgnoreCase))
+                    return client;
+            }
+            return null;
+        }
+
 
         public void SendToAllClients(Packet p)
         {
@@ -280,7 +294,7 @@ namespace SagaMap.Manager
         }
 
         public Dictionary<uint, Client> Clients()
-        {            
+        {
             return this.clients;
         }
 
@@ -341,8 +355,8 @@ namespace SagaMap.Manager
                 }
                 i++;
             }
-            if(message != "")
+            if (message != "")
                 sclient.SendMessage("Saga", message);
-        }       
+        }
     }
 }

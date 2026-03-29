@@ -4,11 +4,13 @@ using System.Text;
 
 using SagaLib;
 
+using SagaMap;
+
 namespace SagaMap.Packets.Client
 {
     public class RegisterFriendlistChar : Packet
     {
-        public RegisterFriendlistChar() 
+        public RegisterFriendlistChar()
         {
             //0x1201 
             this.size = 38;
@@ -18,6 +20,16 @@ namespace SagaMap.Packets.Client
         public string GetName()
         {
             return this.GetString(4);
+        }
+
+        public override SagaLib.Packet New()
+        {
+            return new RegisterFriendlistChar();
+        }
+
+        public override void Parse(SagaLib.Client client)
+        {
+            ((MapClient)client).OnRegisterFriendlistChar(this);
         }
     }
 }
