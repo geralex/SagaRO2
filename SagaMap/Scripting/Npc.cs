@@ -17,6 +17,22 @@ namespace SagaMap
         public enum IconType { None, Personal, Official, Both };
         protected Map map;
         protected uint money = 0;
+
+        /// <summary>
+        /// When true, the BookStore button opens the Catheleya submenu (menu 30 = paid full heal, 34 = shop)
+        /// instead of the skillmaster submenu (31–33). Matches saga-revised CatheleyaConversation.
+        /// </summary>
+        public bool UseCatheleyaBookStore;
+
+        /// <summary>Script id for the Catheleya submenu (skillmaster uses 1758).</summary>
+        public uint CatheleyaMenuScript = 1758;
+
+        /// <summary>Dialog after a successful heal (saga-revised HEAL / default 823).</summary>
+        public uint CatheleyaHealResultScript = 823;
+
+        /// <summary>Dialog before opening the consumables shop (saga-revised SHOP / default 823).</summary>
+        public uint CatheleyaShopScript = 823;
+
         public Map Map { get { return map; } set { map = value; } }
         protected ActorNPC I;
         public ActorNPC Actor { get { return I; } set { I = value; } }
@@ -53,7 +69,7 @@ namespace SagaMap
             public uint script;
         }
 
-        public delegate void func( ActorPC pc );
+        public delegate void func(ActorPC pc);
         public delegate void rewardfunc(ActorPC pc, uint QID);
         public delegate void personalfunc(ActorPC pc, uint QID, byte button);
 
@@ -61,19 +77,19 @@ namespace SagaMap
 
         public Npc() { }
 
-        public Npc( ActorNPC I, Map M )
+        public Npc(ActorNPC I, Map M)
         {
             this.I = I;
             this.map = M;
         }
 
-        public virtual void OnCreate( bool success )
+        public virtual void OnCreate(bool success)
         {
-            if( success )
+            if (success)
             {
                 I.invisble = false;
-                map.OnActorVisibilityChange( I );
-                this.map.SendVisibleActorsToActor( I );
+                map.OnActorVisibilityChange(I);
+                this.map.SendVisibleActorsToActor(I);
             }
         }
 
@@ -96,7 +112,7 @@ namespace SagaMap
             I.stance = Global.STANCE.DIE;
         }
 
-        public void OnSelectButton( ActorPC sActor, int button )
+        public void OnSelectButton(ActorPC sActor, int button)
         {
             Functions func = (Functions)button;
             //Logger.CurrentLogger.WriteLog("NPC", string.Format("Player:{0} invoked the {1} function of NPC:{2}", sActor.name, func.ToString(), this.ToString()));
@@ -151,7 +167,7 @@ namespace SagaMap
                         else
                             if (Functable.ContainsKey((byte)button)) Functable[(byte)button].DynamicInvoke(sActor);
                         break;
-                        
+
                     case Functions.EnterShip:
                         if (Functable.ContainsKey((byte)button)) Functable[(byte)button].DynamicInvoke(sActor);
                         break;
@@ -173,23 +189,23 @@ namespace SagaMap
         /// </summary>
         /// <param name="func">Function</param>
         /// <param name="dele">Handling Method</param>
-        public void AddButton( Functions func, func dele )
+        public void AddButton(Functions func, func dele)
         {
             byte[] tmp = new byte[this.Actor.Attribute.icons.Length + 1];
-            this.Actor.Attribute.icons.CopyTo( tmp, 0 );
+            this.Actor.Attribute.icons.CopyTo(tmp, 0);
             tmp[this.Actor.Attribute.icons.Length] = (byte)func;
             this.Actor.Attribute.icons = tmp;
-            this.Functable.Add( (byte)func, dele );
+            this.Functable.Add((byte)func, dele);
         }
 
         /// <summary>
         /// Add a function of a npc
         /// </summary>
         /// <param name="func">Function</param>
-        public void AddButton( Functions func )
+        public void AddButton(Functions func)
         {
             byte[] tmp = new byte[this.Actor.Attribute.icons.Length + 1];
-            this.Actor.Attribute.icons.CopyTo( tmp, 0 );
+            this.Actor.Attribute.icons.CopyTo(tmp, 0);
             tmp[this.Actor.Attribute.icons.Length] = (byte)func;
             this.Actor.Attribute.icons = tmp;
         }
@@ -200,9 +216,9 @@ namespace SagaMap
         /// <param name="func">Function</param>
         /// <param name="dele">Handling Method</param>
         /// <param name="hide">Should this button be hiden in NPC chat box</param>
-        public void AddButton( Functions func, Delegate dele, bool hide )
+        public void AddButton(Functions func, Delegate dele, bool hide)
         {
-            this.Functable.Add( (byte)func, dele );
+            this.Functable.Add((byte)func, dele);
         }
 
         /// <summary>
@@ -281,23 +297,23 @@ namespace SagaMap
         /// <param name="QID">Quest ID</param>
         /// <param name="SID">Step ID</param>
         /// <param name="s">Step Status</param>
-        public void AddQuestStep( uint QID, uint SID, StepStatus s )
+        public void AddQuestStep(uint QID, uint SID, StepStatus s)
         {
             SagaDB.Quest.Quest quest;
-            if( Questtable.ContainsKey( QID ) )
+            if (Questtable.ContainsKey(QID))
                 quest = Questtable[QID];
             else
             {
                 quest = new SagaDB.Quest.Quest();
-                Questtable.Add( QID, quest );
+                Questtable.Add(QID, quest);
             }
-            if( quest.Steps.ContainsKey( SID ) ) return;
+            if (quest.Steps.ContainsKey(SID)) return;
             else
             {
                 SagaDB.Quest.Step step = new SagaDB.Quest.Step();
                 step.ID = SID;
                 step.Status = (byte)s;
-                quest.Steps.Add( SID, step );
+                quest.Steps.Add(SID, step);
             }
 
         }
@@ -383,7 +399,7 @@ namespace SagaMap
                     }
                     else
                     {
-                        if (pc.cLevel >= i.clv && !SagaMap.Quest.QuestsManager.ifCompletedPersonalQuest(pc,i.QID) && (SagaMap.Quest.QuestsManager.ifCompletedPersonalQuest(pc, i.previousquest) || i.previousquest == 0))
+                        if (pc.cLevel >= i.clv && !SagaMap.Quest.QuestsManager.ifCompletedPersonalQuest(pc, i.QID) && (SagaMap.Quest.QuestsManager.ifCompletedPersonalQuest(pc, i.previousquest) || i.previousquest == 0))
                             return i;
                     }
                 }
@@ -393,7 +409,7 @@ namespace SagaMap
                         return i;
                 }
             }
-            
+
             return null;
         }
 
@@ -405,9 +421,9 @@ namespace SagaMap
         /// <param name="QID">Quest ID</param>
         /// <param name="SID">Step ID</param>
         /// <returns></returns>
-        public StepStatus GetQuestStepStatus( ActorPC pc, uint QID, uint SID )
+        public StepStatus GetQuestStepStatus(ActorPC pc, uint QID, uint SID)
         {
-            return (StepStatus)SagaMap.Quest.QuestsManager.GetQuestStepStatus( pc, QID, SID );
+            return (StepStatus)SagaMap.Quest.QuestsManager.GetQuestStepStatus(pc, QID, SID);
         }
 
         /// <summary>
@@ -415,10 +431,10 @@ namespace SagaMap
         /// </summary>
         /// <param name="pc">Player</param>
         /// <returns></returns>
-        public uint GetActiveQuest( ActorPC pc )
+        public uint GetActiveQuest(ActorPC pc)
         {
-            SagaDB.Quest.Quest quest = SagaMap.Quest.QuestsManager.GetActiveQuest( pc );
-            if( quest != null )
+            SagaDB.Quest.Quest quest = SagaMap.Quest.QuestsManager.GetActiveQuest(pc);
+            if (quest != null)
                 return quest.ID;
             else
                 return 0;
@@ -431,9 +447,9 @@ namespace SagaMap
         /// <param name="QID">Quest ID</param>
         /// <param name="SID">Step ID</param>
         /// <param name="s">Status</param>
-        public void UpdateQuest( ActorPC pc, uint QID, uint SID, StepStatus s )
+        public void UpdateQuest(ActorPC pc, uint QID, uint SID, StepStatus s)
         {
-            SagaMap.Quest.QuestsManager.SetQuestStepStatus( pc, QID, SID, (byte)s );
+            SagaMap.Quest.QuestsManager.SetQuestStepStatus(pc, QID, SID, (byte)s);
         }
 
         /// <summary>
@@ -441,10 +457,10 @@ namespace SagaMap
         /// </summary>
         /// <param name="pc">Player</param>
         /// <param name="QID">Quest</param>
-        public void QuestCompleted( ActorPC pc, uint QID )
+        public void QuestCompleted(ActorPC pc, uint QID)
         {
             Packets.Server.QuestCompleted p = new SagaMap.Packets.Server.QuestCompleted();
-            p.SetQuestID( QID );
+            p.SetQuestID(QID);
             SendPacket(pc, p);
             //eh.C.QuestMobItem = null;
         }
@@ -454,10 +470,10 @@ namespace SagaMap
         /// </summary>
         /// <param name="pc">Player</param>
         /// <param name="QID">Quest ID</param>
-        public void RemoveQuest( ActorPC pc, uint QID )
+        public void RemoveQuest(ActorPC pc, uint QID)
         {
             Packets.Server.RemoveQuest p = new SagaMap.Packets.Server.RemoveQuest();
-            p.SetQuestID( QID );
+            p.SetQuestID(QID);
             SendPacket(pc, p);
         }
 
@@ -466,7 +482,7 @@ namespace SagaMap
         /// </summary>
         /// <param name="pc">Player</param>
         /// <param name="func">Delegate to a Method</param>
-        public void SetReward( ActorPC pc, rewardfunc func )
+        public void SetReward(ActorPC pc, rewardfunc func)
         {
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             eh.C.RewardFunc = func;
@@ -487,14 +503,14 @@ namespace SagaMap
         /// <param name="pc">Player</param>
         /// <param name="cexp">CEXP</param>
         /// <param name="jexp">JEXP</param>
-        public void GiveExp( ActorPC pc, uint cexp, uint jexp )
+        public void GiveExp(ActorPC pc, uint cexp, uint jexp)
         {
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             pc.cExp += cexp;
             pc.jExp += jexp;
             eh.C.SendCharStatus(0);
             ExperienceManager.Instance.CheckExp(eh.C, ExperienceManager.LevelType.CLEVEL);
-			ExperienceManager.Instance.CheckExp(eh.C, ExperienceManager.LevelType.JLEVEL);
+            ExperienceManager.Instance.CheckExp(eh.C, ExperienceManager.LevelType.JLEVEL);
 
         }
 
@@ -504,7 +520,7 @@ namespace SagaMap
         /// </summary>
         /// <param name="pc"></param>
         /// <param name="amount"></param>
-        public void GiveZeny( ActorPC pc, uint amount )
+        public void GiveZeny(ActorPC pc, uint amount)
         {
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             pc.zeny += amount;
@@ -516,10 +532,10 @@ namespace SagaMap
         /// </summary>
         /// <param name="pc"></param>
         /// <param name="amount"></param>
-        public void TakeZeny( ActorPC pc, uint amount )
+        public void TakeZeny(ActorPC pc, uint amount)
         {
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
-            if( pc.zeny > amount )
+            if (pc.zeny > amount)
                 pc.zeny -= amount;
             else
                 pc.zeny = 0;
@@ -545,27 +561,27 @@ namespace SagaMap
         /// <param name="pc"></param>
         /// <param name="id">Quest ID</param>
         /// <returns></returns>
-        public bool IfGotQuest( ActorPC pc, uint id )
+        public bool IfGotQuest(ActorPC pc, uint id)
         {
-            return SagaMap.Quest.QuestsManager.ifGotQuest( pc, id );
+            return SagaMap.Quest.QuestsManager.ifGotQuest(pc, id);
         }
 
         /// <summary>
         /// Send the QuestList of the current NPC
         /// </summary>
         /// <param name="pc"></param>
-        public void SendQuestList( ActorPC pc )
+        public void SendQuestList(ActorPC pc)
         {
             Packets.Server.SendQuestList p = new SagaMap.Packets.Server.SendQuestList();
-            if( this.isItem )
+            if (this.isItem)
             {
                 MapItem item = (MapItem)this;
-                p.SetActor( item.ActorI.id );
+                p.SetActor(item.ActorI.id);
                 pc.LastMissionBoard = item.ActorI;
             }
-            else p.SetActor( this.Actor.id );
+            else p.SetActor(this.Actor.id);
             List<uint> IDs = GetAvaluableQuest(pc);
-            p.SetQuestList( IDs );
+            p.SetQuestList(IDs);
             SendPacket(pc, p);
         }
 
@@ -574,9 +590,9 @@ namespace SagaMap
         /// </summary>
         /// <param name="QuestID"></param>
         /// <param name="StepID"></param>
-        public void AddStep( uint QuestID, uint StepID )
+        public void AddStep(uint QuestID, uint StepID)
         {
-            if( Quest == null )
+            if (Quest == null)
             {
                 Quest = new SagaDB.Quest.Quest();
                 Quest.ID = QuestID;
@@ -584,7 +600,7 @@ namespace SagaMap
             }
             SagaDB.Quest.Step step = new SagaDB.Quest.Step();
             step.ID = StepID;
-            if( lastStep != 0 )
+            if (lastStep != 0)
             {
                 step.Status = 0;
                 step.step = 2;
@@ -595,7 +611,7 @@ namespace SagaMap
                 step.Status = 1;
                 step.step = 2;
             }
-            Quest.Steps.Add( StepID, step );
+            Quest.Steps.Add(StepID, step);
             lastStep = StepID;
         }
 
@@ -606,7 +622,7 @@ namespace SagaMap
         /// <param name="SID">Step Item</param>
         /// <param name="itemID">Item ID</param>
         /// <param name="ammount"></param>
-        public void AddQuestItem( uint QID, uint SID, uint itemID, byte ammount )
+        public void AddQuestItem(uint QID, uint SID, uint itemID, byte ammount)
         {
             SagaMap.Quest.QuestsManager.AddQuestItem(QID, SID, 0, itemID, ammount);
         }
@@ -616,7 +632,7 @@ namespace SagaMap
             SagaMap.Quest.QuestsManager.AddQuestItem(QID, SID, SubSID, itemID, ammount);
         }
 
-        public void AddEnemyInfo(uint QID, uint SID,List<uint> MobID, byte ammount)
+        public void AddEnemyInfo(uint QID, uint SID, List<uint> MobID, byte ammount)
         {
             this.AddEnemyInfo(QID, SID, 0, MobID, ammount);
         }
@@ -634,9 +650,9 @@ namespace SagaMap
         /// <param name="SID"></param>
         /// <param name="ItemID"></param>
         /// <param name="rate"></param>
-        public void AddMobLoot( uint mobid, uint QID, uint SID, int ItemID, uint rate )
+        public void AddMobLoot(uint mobid, uint QID, uint SID, int ItemID, uint rate)
         {
-            SagaMap.Quest.QuestsManager.AddMobLoot( mobid, QID, SID, ItemID, rate );
+            SagaMap.Quest.QuestsManager.AddMobLoot(mobid, QID, SID, ItemID, rate);
             /*ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             eh.C.QuestMobItem.Add(mobid, lootid);*/
         }
@@ -645,10 +661,10 @@ namespace SagaMap
         /// Start a quest
         /// </summary>
         /// <param name="pc"></param>
-        public void QuestStart( ActorPC pc )
+        public void QuestStart(ActorPC pc)
         {
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
-            pc.QuestTable.Add( Quest.ID, Quest );
+            pc.QuestTable.Add(Quest.ID, Quest);
             MapServer.charDB.NewQuest(pc, SagaDB.Quest.QuestType.OfficialQuest, Quest);
             eh.C.SendQuestInfo();
             Quest = null;
@@ -690,12 +706,12 @@ namespace SagaMap
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        public void SendNavPoint( ActorPC pc, uint QID, uint npcType, float x, float y, float z )
+        public void SendNavPoint(ActorPC pc, uint QID, uint npcType, float x, float y, float z)
         {
             Packets.Server.SendNavPoint p = new SagaMap.Packets.Server.SendNavPoint();
-            p.SetQuestID( QID );
-            p.SetNPCType( npcType );
-            p.SetPosition( x, y, z );
+            p.SetQuestID(QID);
+            p.SetNPCType(npcType);
+            p.SetPosition(x, y, z);
             SendPacket(pc, p);
         }
 
@@ -710,10 +726,10 @@ namespace SagaMap
         /// </summary>
         /// <param name="pc"></param>
         /// <param name="QID"></param>
-        public void RemoveNavPoint( ActorPC pc, uint QID )
+        public void RemoveNavPoint(ActorPC pc, uint QID)
         {
             Packets.Server.RemoveNavPoint p = new SagaMap.Packets.Server.RemoveNavPoint();
-            p.SetQuestID( QID );
+            p.SetQuestID(QID);
             SendPacket(pc, p);
         }
 
@@ -721,7 +737,7 @@ namespace SagaMap
         /// Set the chating script for current NPC
         /// </summary>
         /// <param name="script"></param>
-        public void SetScript( uint script )
+        public void SetScript(uint script)
         {
             this.Actor.Attribute.script = script;
         }
@@ -731,7 +747,7 @@ namespace SagaMap
         /// </summary>
         /// <param name="pc"></param>
         /// <param name="script"></param>
-        public void NPCChat( ActorPC pc, uint script )
+        public void NPCChat(ActorPC pc, uint script)
         {
             if (script != 0)
             {
@@ -764,15 +780,15 @@ namespace SagaMap
         /// <param name="pc"></param>
         /// <param name="npc"></param>
         /// <param name="script"></param>
-        public static void NPCChat( ActorPC pc, ActorNPC npc, uint script )
+        public static void NPCChat(ActorPC pc, ActorNPC npc, uint script)
         {
             if (pc == null || npc == null) return;
             Packets.Server.NPCChat p = new SagaMap.Packets.Server.NPCChat();
-            p.SetActor( npc.id );
-            p.SetIcons( (byte)npc.Attribute.icons.Length, npc.Attribute.icons );
-            p.SetU( 1 );
-            p.SetScript( script );
-            p.SetUnknown( 1 );
+            p.SetActor(npc.id);
+            p.SetIcons((byte)npc.Attribute.icons.Length, npc.Attribute.icons);
+            p.SetU(1);
+            p.SetScript(script);
+            p.SetUnknown(1);
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             eh.C.netIO.SendPacket(p, eh.C.SessionID);
         }
@@ -786,7 +802,7 @@ namespace SagaMap
         private void HandelPersonalRequest(ActorPC pc)
         {
             QuestReqirement quest = this.GetAvaluablePersonalQuest(pc);
-            ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e; 
+            ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             if (quest != null)
             {
                 Packets.Server.NPCChat p = new SagaMap.Packets.Server.NPCChat();
@@ -801,26 +817,29 @@ namespace SagaMap
 
         }
 
-        private void HandelSmith( ActorPC pc )
+        private void HandelSmith(ActorPC pc)
         {
             Packets.Server.NPCChat p = new SagaMap.Packets.Server.NPCChat();
-            p.SetActor( this.Actor.id );
-            p.SetIcons( 4, new byte[4] { 50, 52, 53, 55 } );
-            p.SetU( 35 );//marked as Smith function
-            p.SetScript( 1746 );
-            p.SetUnknown( 2 );
+            p.SetActor(this.Actor.id);
+            p.SetIcons(4, new byte[4] { 50, 52, 53, 55 });
+            p.SetU(35);//marked as Smith function
+            p.SetScript(1746);
+            p.SetUnknown(2);
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             eh.C.netIO.SendPacket(p, eh.C.SessionID);
 
         }
-        private void HandelBookstore( ActorPC pc )
+        private void HandelBookstore(ActorPC pc)
         {
             Packets.Server.NPCChat p = new SagaMap.Packets.Server.NPCChat();
-            p.SetActor( this.Actor.id );
-            p.SetIcons( 3, new byte[3] { 31, 32, 33 } );
-            p.SetU( 13 );//marked as Bookstore function
-            p.SetScript( 1758 );
-            p.SetUnknown( 2 );
+            p.SetActor(this.Actor.id);
+            if (this.UseCatheleyaBookStore)
+                p.SetIcons(2, new byte[2] { 30, 34 });
+            else
+                p.SetIcons(3, new byte[3] { 31, 32, 33 });
+            p.SetU(13);//marked as Bookstore function
+            p.SetScript(this.UseCatheleyaBookStore ? this.CatheleyaMenuScript : 1758);
+            p.SetUnknown(2);
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             eh.C.netIO.SendPacket(p, eh.C.SessionID);
 
@@ -837,7 +856,7 @@ namespace SagaMap
             p.SetUnknown(2);
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             eh.C.netIO.SendPacket(p, eh.C.SessionID);
-            
+
         }
 
         private void HandelSupply(ActorPC pc)
@@ -852,7 +871,7 @@ namespace SagaMap
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             eh.C.netIO.SendPacket(p, eh.C.SessionID);
             SendSupplyMenu p2 = new SendSupplyMenu();
-            p2.SetMenuID(this.SupplyMenuID);            
+            p2.SetMenuID(this.SupplyMenuID);
             eh.C.netIO.SendPacket(p2, eh.C.SessionID);
         }
 
@@ -870,34 +889,99 @@ namespace SagaMap
             eh.C.netIO.SendPacket(p, eh.C.SessionID);
         }
 
-        public static void HandelMenu( ActorPC pc, byte Button, byte Menu )
+        /// <summary>Same formula as saga-revised CatheleyaConversation.ComputeHealCosts (char level based).</summary>
+        private static int ComputeCatheleyaHealCost(ActorPC target)
+        {
+            return 8 + (Math.Max((int)target.cLevel - 5, 0) * 8);
+        }
+
+        /// <summary>Paid full HP/SP restore. Returns true if a custom post-heal NPCChat was sent (caller should skip default trailing NPCChat).</summary>
+        private static bool TryCatheleyaHeal(ActorPC pc, Npc npc)
+        {
+            if (npc == null || !npc.UseCatheleyaBookStore)
+                return false;
+
+            ActorEventHandlers.PC_EventHandler eh = (ActorEventHandlers.PC_EventHandler)pc.e;
+            uint required = (uint)ComputeCatheleyaHealCost(pc);
+
+            if (required > pc.zeny)
+            {
+                eh.C.SendMessage("", "Not enough zeny for healing.", Packets.Server.SendChat.MESSAGE_TYPE.SYSTEM_MESSAGE);
+                return false;
+            }
+            if (pc.HP >= pc.maxHP && pc.SP >= pc.maxSP)
+            {
+                eh.C.SendMessage("", "You do not need healing.", Packets.Server.SendChat.MESSAGE_TYPE.SYSTEM_MESSAGE);
+                return false;
+            }
+
+            pc.zeny -= required;
+            npc.money += required;
+            pc.HP = pc.maxHP;
+            pc.SP = pc.maxSP;
+            eh.C.SendZeny();
+            eh.C.SendCharStatus(0);
+
+            Packets.Server.NPCChat p = new SagaMap.Packets.Server.NPCChat();
+            p.SetActor(npc.Actor.id);
+            p.SetIcons(0, null);
+            p.SetU(1);
+            p.SetScript(npc.CatheleyaHealResultScript);
+            p.SetUnknown(1);
+            eh.C.netIO.SendPacket(p, eh.C.SessionID);
+            return true;
+        }
+
+        public static void HandelMenu(ActorPC pc, byte Button, byte Menu)
         {
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             Npc npc;
-            if( Button == (byte)Functions.BookStore )
+            bool skipTrailingNpcChat = false;
+            if (Button == (byte)Functions.BookStore)
             {
-                switch( Menu )
+                switch (Menu)
                 {
+                    case 30:
+                        if (pc.CurTarget != null && pc.CurTarget.type == ActorType.NPC)
+                            skipTrailingNpcChat = TryCatheleyaHeal(pc, (Npc)pc.CurTarget.e);
+                        break;
+                    case 34:
+                        if (pc.CurTarget != null && pc.CurTarget.type == ActorType.NPC)
+                        {
+                            npc = (Npc)pc.CurTarget.e;
+                            if (npc.UseCatheleyaBookStore && npc.Actor.NPCinv != null && npc.Actor.NPCinv.Count > 0)
+                            {
+                                Packets.Server.NPCChat pshop = new SagaMap.Packets.Server.NPCChat();
+                                pshop.SetActor(npc.Actor.id);
+                                pshop.SetIcons(0, null);
+                                pshop.SetU(1);
+                                pshop.SetScript(npc.CatheleyaShopScript);
+                                pshop.SetUnknown(1);
+                                eh.C.netIO.SendPacket(pshop, eh.C.SessionID);
+                                eh.OnSendShopList(npc.Actor.NPCinv, npc.money, npc.Actor.id);
+                            }
+                        }
+                        break;
                     case 31: //Jobchange
                         Packets.Server.ChangeJob p = new SagaMap.Packets.Server.ChangeJob();
                         List<byte> jobs = new List<byte>();
-                        for( byte i = 1; i < 7; i++ )
+                        for (byte i = 1; i < 7; i++)
                         {
-                            if( i != (byte)pc.job ) jobs.Add( i );
+                            if (i != (byte)pc.job) jobs.Add(i);
                         }
-                        p.SetJobCounts( (byte)jobs.Count );
-                        p.SetPossibleJobs( jobs );
+                        p.SetJobCounts((byte)jobs.Count);
+                        p.SetPossibleJobs(jobs);
                         eh.C.netIO.SendPacket(p, eh.C.SessionID);
                         break;
                     case 32: //Special Skills
                         Packets.Server.SendSpecialSkills p2 = new SagaMap.Packets.Server.SendSpecialSkills();
                         List<uint> skills = new List<uint>();
                         List<uint> tmptable = new List<uint>();
-                        foreach( uint i in pc.InactiveSkills.Keys )
+                        foreach (uint i in pc.InactiveSkills.Keys)
                         {
-                            if( SagaMap.Skills.SkillFactory.GetSkill( i ).special > 0 && !pc.BattleSkills.ContainsKey(i)) skills.Add( i );
+                            if (SagaMap.Skills.SkillFactory.GetSkill(i).special > 0 && !pc.BattleSkills.ContainsKey(i)) skills.Add(i);
                         }
-                        p2.SetSkills( skills );
+                        p2.SetSkills(skills);
                         Packets.Server.JobLevels p3 = new SagaMap.Packets.Server.JobLevels();
                         p3.SetJobLevels(pc.JobLevels);
                         eh.C.netIO.SendPacket(p3, eh.C.SessionID);
@@ -905,19 +989,19 @@ namespace SagaMap
                         break;
                     case 33: //BookStore
                         npc = (Npc)pc.CurTarget.e;
-                        npc.SendBooks( pc );
+                        npc.SendBooks(pc);
                         break;
                 }
             }
-            if( Button == (byte)Functions.Kafra )
+            if (Button == (byte)Functions.Kafra)
             {
-                switch( Menu )
+                switch (Menu)
                 {
                     case 10: //Save Point
-                        if( pc.CurTarget != null )
+                        if (pc.CurTarget != null)
                         {
                             npc = (Npc)pc.CurTarget.e;
-                            if( npc.SavePoint != null )
+                            if (npc.SavePoint != null)
                             {
                                 pc.save_map = (byte)npc.SavePoint[0];
                                 pc.save_x = npc.SavePoint[1];
@@ -951,51 +1035,52 @@ namespace SagaMap
                 }
             }
             Packets.Server.NPCMenu p1 = new SagaMap.Packets.Server.NPCMenu();
-            p1.SetButtonID( Button );
-            p1.SetMenuID( Menu );
+            p1.SetButtonID(Button);
+            p1.SetMenuID(Menu);
             eh.C.netIO.SendPacket(p1, eh.C.SessionID);
-            Npc.NPCChat( pc, (ActorNPC)pc.CurTarget, 0 );
+            if (!skipTrailingNpcChat)
+                Npc.NPCChat(pc, (ActorNPC)pc.CurTarget, 0);
         }
 
-        public static void RepaireEquip( ActorPC pc, byte Container, byte slot )
+        public static void RepaireEquip(ActorPC pc, byte Container, byte slot)
         {
             uint price;
             float tmp;
-            if( Container == 8 )
+            if (Container == 8)
             {
-                Weapon weapon = WeaponFactory.GetActiveWeapon( pc );
-                WeaponInfo info = WeaponFactory.GetWeaponInfo( (byte)weapon.type, (byte)weapon.level );
-                float perc = (float)( info.maxdurability - weapon.durability ) / (float)info.maxdurability;
-                tmp = ( 14 * weapon.level ) * perc;
+                Weapon weapon = WeaponFactory.GetActiveWeapon(pc);
+                WeaponInfo info = WeaponFactory.GetWeaponInfo((byte)weapon.type, (byte)weapon.level);
+                float perc = (float)(info.maxdurability - weapon.durability) / (float)info.maxdurability;
+                tmp = (14 * weapon.level) * perc;
                 price = (uint)tmp;
-                if( pc.zeny < price ) return;
+                if (pc.zeny < price) return;
                 weapon.durability = (ushort)info.maxdurability;
                 Packets.Server.WeaponAdjust p = new SagaMap.Packets.Server.WeaponAdjust();
-                p.SetFunction( SagaMap.Packets.Server.WeaponAdjust.Function.Durability );
-                p.SetValue( weapon.durability );
+                p.SetFunction(SagaMap.Packets.Server.WeaponAdjust.Function.Durability);
+                p.SetValue(weapon.durability);
                 ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
                 eh.C.netIO.SendPacket(p, eh.C.SessionID);
                 pc.zeny -= price;
                 eh.C.SendZeny();
             }
-            if( Container == 1 )
+            if (Container == 1)
             {
                 Item item = pc.inv.EquipList[(EQUIP_SLOT)slot];
-                float perc = (float)( item.maxDur - item.durability ) / (float)item.maxDur;
-                tmp = ( item.price / 2 ) * perc;
+                float perc = (float)(item.maxDur - item.durability) / (float)item.maxDur;
+                tmp = (item.price / 2) * perc;
                 price = (uint)tmp;
-                if( pc.zeny < price ) return;
+                if (pc.zeny < price) return;
                 Packets.Server.ItemAdjust p = new SagaMap.Packets.Server.ItemAdjust();
                 ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
-                if( item.durability == 0 )
+                if (item.durability == 0)
                 {
-                    Bonus.BonusHandler.Instance.EquiqItem( pc, item, false );
-                    p.SetContainer( Container );
-                    p.SetFunction( SagaMap.Packets.Server.ItemAdjust.Function.Active );
-                    p.SetSlot( slot );
-                    p.SetValue( 1 );
+                    Bonus.BonusHandler.Instance.EquiqItem(pc, item, false);
+                    p.SetContainer(Container);
+                    p.SetFunction(SagaMap.Packets.Server.ItemAdjust.Function.Active);
+                    p.SetSlot(slot);
+                    p.SetValue(1);
                     eh.C.netIO.SendPacket(p, eh.C.SessionID); ;
-                    Skills.SkillHandler.CalcHPSP( ref pc );
+                    Skills.SkillHandler.CalcHPSP(ref pc);
                     eh.C.SendCharStatus(0);
                     eh.C.SendExtStats();
                     eh.C.SendBattleStatus();
@@ -1003,29 +1088,29 @@ namespace SagaMap
                 }
                 p = new SagaMap.Packets.Server.ItemAdjust();
                 item.durability = item.maxDur;
-                p.SetContainer( Container );
-                p.SetFunction( SagaMap.Packets.Server.ItemAdjust.Function.Durability );
-                p.SetSlot( slot );
-                p.SetValue( item.durability );
+                p.SetContainer(Container);
+                p.SetFunction(SagaMap.Packets.Server.ItemAdjust.Function.Durability);
+                p.SetSlot(slot);
+                p.SetValue(item.durability);
                 eh.C.netIO.SendPacket(p, eh.C.SessionID);
                 pc.zeny -= price;
                 eh.C.SendZeny();
                 MapServer.charDB.UpdateItem(pc, item);
             }
-            if( Container == 2 )
+            if (Container == 2)
             {
-                Item item = pc.inv.GetItem( CONTAINER_TYPE.INVENTORY, slot );
+                Item item = pc.inv.GetItem(CONTAINER_TYPE.INVENTORY, slot);
                 if (item == null) return;
-                float perc = (float)( item.maxDur - item.durability ) / (float)item.maxDur;
-                tmp = ( item.price / 10 ) * perc;
+                float perc = (float)(item.maxDur - item.durability) / (float)item.maxDur;
+                tmp = (item.price / 10) * perc;
                 price = (uint)tmp;
-                if( pc.zeny < price ) return;
+                if (pc.zeny < price) return;
                 item.durability = item.maxDur;
                 Packets.Server.ItemAdjust p = new SagaMap.Packets.Server.ItemAdjust();
-                p.SetContainer( Container );
-                p.SetFunction( SagaMap.Packets.Server.ItemAdjust.Function.Durability );
-                p.SetSlot( slot );
-                p.SetValue( item.durability );
+                p.SetContainer(Container);
+                p.SetFunction(SagaMap.Packets.Server.ItemAdjust.Function.Durability);
+                p.SetSlot(slot);
+                p.SetValue(item.durability);
                 ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
                 eh.C.netIO.SendPacket(p, eh.C.SessionID);
                 pc.zeny -= price;
@@ -1038,21 +1123,21 @@ namespace SagaMap
 
         public virtual void OnDelete() { }
 
-        public virtual void OnActorAppears( Actor dActor ) { }
+        public virtual void OnActorAppears(Actor dActor) { }
 
         public virtual void OnActorChangesState(Actor aActor, MapEventArgs args) { }
 
-        public virtual void OnActorStartsMoving( Actor mActor, float[] pos, float[] accel, int yaw, ushort speed, uint delayTime ) { }
+        public virtual void OnActorStartsMoving(Actor mActor, float[] pos, float[] accel, int yaw, ushort speed, uint delayTime) { }
 
-        public virtual void OnActorStartsMoving( ActorNPC mActor, byte count, float[] waypoints, ushort speed ) { }
+        public virtual void OnActorStartsMoving(ActorNPC mActor, byte count, float[] waypoints, ushort speed) { }
 
-        public virtual void OnActorStopsMoving( Actor mActor, float[] pos, int yaw, ushort speed, uint delayTime ) { }
+        public virtual void OnActorStopsMoving(Actor mActor, float[] pos, int yaw, ushort speed, uint delayTime) { }
 
-        public virtual void OnActorChat( Actor cActor, MapEventArgs args ) { }
+        public virtual void OnActorChat(Actor cActor, MapEventArgs args) { }
 
-        public virtual void OnActorDisappears( Actor dActor ) { }
+        public virtual void OnActorDisappears(Actor dActor) { }
 
-        public virtual void OnActorSkillUse( Actor sActor, MapEventArgs args ) { }
+        public virtual void OnActorSkillUse(Actor sActor, MapEventArgs args) { }
 
         //public virtual void OnSelectButton(ActorPC sActor, int button) { }
 
@@ -1062,12 +1147,12 @@ namespace SagaMap
         /// <param name="client"></param>
         /// <param name="sActor"></param>
         /// <param name="NPCinv"></param>
-        private void SendInventroy( SagaLib.Client client, ActorPC sActor, List<Item> NPCinv )
+        private void SendInventroy(SagaLib.Client client, ActorPC sActor, List<Item> NPCinv)
         {
             MapClient client_ = (MapClient)client;
             Packets.Server.SendNpcInventory sendPacket = new Packets.Server.SendNpcInventory();
-            sendPacket.SetActorID( sActor.id );
-            sendPacket.SetItems( NPCinv );
+            sendPacket.SetActorID(sActor.id);
+            sendPacket.SetItems(NPCinv);
             client.netIO.SendPacket(sendPacket, client_.SessionID);
         }
 
@@ -1076,13 +1161,13 @@ namespace SagaMap
         /// Send the Book list
         /// </summary>
         /// <param name="pc"></param>
-        private void SendBooks( ActorPC pc )
+        private void SendBooks(ActorPC pc)
         {
             if (this.Actor.NPCinv == null) return;
             Packets.Server.SendBookList p = new SagaMap.Packets.Server.SendBookList();
-            p.SetActorID( this.Actor.id );
-            p.SetMoney( this.money );
-            p.SetBooks( this.Actor.NPCinv );
+            p.SetActorID(this.Actor.id);
+            p.SetMoney(this.money);
+            p.SetBooks(this.Actor.NPCinv);
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
             eh.C.netIO.SendPacket(p, eh.C.SessionID);
         }
@@ -1094,7 +1179,7 @@ namespace SagaMap
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        public void SetSavePoint( byte map, float x, float y, float z )
+        public void SetSavePoint(byte map, float x, float y, float z)
         {
             this.SavePoint = new float[4] { map, x, y, z };
         }
@@ -1112,10 +1197,10 @@ namespace SagaMap
         /// Add goods to NPC Shop
         /// </summary>
         /// <param name="id"></param>
-        public void AddGoods( int id )
+        public void AddGoods(int id)
         {
-            if( this.Actor.NPCinv == null ) this.Actor.NPCinv = new List<Item>();
-            this.Actor.NPCinv.Add( new SagaDB.Items.Item( id ) );
+            if (this.Actor.NPCinv == null) this.Actor.NPCinv = new List<Item>();
+            this.Actor.NPCinv.Add(new SagaDB.Items.Item(id));
         }
         /// <summary>
         /// Add a Supply Product
@@ -1160,19 +1245,19 @@ namespace SagaMap
             list.Add(item);
         }
 
-        public void OnActorChangeEquip( Actor sActor, MapEventArgs args ) { }
+        public void OnActorChangeEquip(Actor sActor, MapEventArgs args) { }
 
-        public void OnSendToMap( bool success ) { }
+        public void OnSendToMap(bool success) { }
 
-        public void OnAddItem( Item nitem, SagaDB.Items.ITEM_UPDATE_REASON reason ) { }
+        public void OnAddItem(Item nitem, SagaDB.Items.ITEM_UPDATE_REASON reason) { }
 
         /// <summary>
         /// Say something
         /// </summary>
         /// <param name="sentence"></param>
-        public void Say( string sentence )
+        public void Say(string sentence)
         {
-            Script.Say( this, sentence );
+            Script.Say(this, sentence);
         }
 
         /// <summary>
@@ -1181,10 +1266,10 @@ namespace SagaMap
         /// <param name="pc"></param>
         /// <param name="ItemID"></param>
         /// <returns></returns>
-        public byte CountItem( ActorPC pc, int ItemID )
+        public byte CountItem(ActorPC pc, int ItemID)
         {
-            Item item = pc.inv.GetItem( CONTAINER_TYPE.INVENTORY, ItemID );
-            if( item == null ) return 0;
+            Item item = pc.inv.GetItem(CONTAINER_TYPE.INVENTORY, ItemID);
+            if (item == null) return 0;
             return item.stack;
         }
 
@@ -1194,10 +1279,10 @@ namespace SagaMap
         /// <param name="dActor"></param>
         /// <param name="itemID"></param>
         /// <param name="ammount"></param>
-        public void GiveItem( Actor dActor, int itemID, byte ammount )
+        public void GiveItem(Actor dActor, int itemID, byte ammount)
         {
-            for( byte i = 0; i < ammount; i++ )
-                Script.GiveItem( this, (ActorPC)dActor, itemID );
+            for (byte i = 0; i < ammount; i++)
+                Script.GiveItem(this, (ActorPC)dActor, itemID);
             SagaMap.Quest.QuestsManager.UpdateQuestItem((ActorPC)dActor);
         }
 
@@ -1207,10 +1292,10 @@ namespace SagaMap
         /// <param name="pc"></param>
         /// <param name="itemID"></param>
         /// <param name="ammount"></param>
-        public void TakeItem( ActorPC pc, int itemID, byte ammount )
-        {            
+        public void TakeItem(ActorPC pc, int itemID, byte ammount)
+        {
             ActorEventHandlers.PC_EventHandler eh = (SagaMap.ActorEventHandlers.PC_EventHandler)pc.e;
-            eh.C.map.RemoveItemFromActorPC(pc, itemID, ammount, ITEM_UPDATE_REASON.NPC_TOOK);            
+            eh.C.map.RemoveItemFromActorPC(pc, itemID, ammount, ITEM_UPDATE_REASON.NPC_TOOK);
         }
 
         /// <summary>
@@ -1221,9 +1306,9 @@ namespace SagaMap
         /// <param name="x"></param>
         /// <param name="y"></param>
         /// <param name="z"></param>
-        public void Warp( ActorPC pc, byte mapid, float x, float y, float z )
+        public void Warp(ActorPC pc, byte mapid, float x, float y, float z)
         {
-            Script.Warp( pc, mapid, x, y, z );
+            Script.Warp(pc, mapid, x, y, z);
         }
 
         /// <summary>
@@ -1231,44 +1316,44 @@ namespace SagaMap
         /// </summary>
         /// <param name="pc"></param>
         /// <param name="mapid"></param>
-        public void Warp( ActorPC pc, byte mapid )
+        public void Warp(ActorPC pc, byte mapid)
         {
-            Script.Warp( pc, mapid );
+            Script.Warp(pc, mapid);
         }
 
 
-        public void OnSendShopList( List<Item> items, uint money, uint ActorID )
+        public void OnSendShopList(List<Item> items, uint money, uint ActorID)
         { }
 
-        public void OnTimeWeatherChange( byte[] gameTime, Global.WEATHER_TYPE weather )
+        public void OnTimeWeatherChange(byte[] gameTime, Global.WEATHER_TYPE weather)
         { }
 
-        public void OnTeleport( float x, float y, float z )
+        public void OnTeleport(float x, float y, float z)
         { }
 
-        public void OnPartyInvite( ActorPC sActor ) { }
+        public void OnPartyInvite(ActorPC sActor) { }
 
-        public void OnPartyAccept( ActorPC sActor ) { }
+        public void OnPartyAccept(ActorPC sActor) { }
 
-        public void OnTradeStart( ActorPC sActor ) { }
+        public void OnTradeStart(ActorPC sActor) { }
 
-        public void OnTradeStatus( uint targetid, TradeResults status ) { }
+        public void OnTradeStatus(uint targetid, TradeResults status) { }
 
-        public void OnTradeItem( byte Tradeslot, Item TradeItem ) { }
+        public void OnTradeItem(byte Tradeslot, Item TradeItem) { }
 
         public void OnTradeConfirm() { }
 
-        public void OnTradeZeny( int monies ) { }
+        public void OnTradeZeny(int monies) { }
 
         public void OnResetTradeItems() { }
 
         public void PerformTrade() { }
 
-        public void OnSendWhisper( string name, string message, byte flag ) { }
+        public void OnSendWhisper(string name, string message, byte flag) { }
 
-        public void OnSendMessage( string from, string message ) { }
+        public void OnSendMessage(string from, string message) { }
 
-        public void OnChangeStatus( Actor sActor, MapEventArgs args ) { }
+        public void OnChangeStatus(Actor sActor, MapEventArgs args) { }
 
         public void OnActorSelection(ActorPC sActor, MapEventArgs args) { }
     }
